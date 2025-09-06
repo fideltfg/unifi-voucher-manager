@@ -16,7 +16,8 @@ import { formatCode } from "@/utils/format";
 
 export type PrintMode = "list" | "grid";
 
-function VoucherBlock({ voucher }: { voucher: Voucher }) {
+// This component represents a single voucher card to be printed
+function VoucherPrintCard({ voucher }: { voucher: Voucher }) {
   const { wifiConfig, wifiString } = useGlobal();
 
   return (
@@ -102,6 +103,7 @@ function VoucherBlock({ voucher }: { voucher: Voucher }) {
   );
 }
 
+// This component handles fetching and displaying vouchers based on URL params
 function Vouchers() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -144,12 +146,13 @@ function Vouchers() {
   ) : (
     <div className={mode === "grid" ? "print-grid" : "print-list"}>
       {vouchers.map((v) => (
-        <VoucherBlock key={v.id} voucher={v} />
+        <VoucherPrintCard key={v.id} voucher={v} />
       ))}
     </div>
   );
 }
 
+// This sets up the print page itself
 export default function PrintPage() {
   const router = useRouter();
 
