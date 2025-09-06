@@ -18,7 +18,11 @@ async function call<T>(endpoint: string, opts: RequestInit = {}) {
     headers: { "Content-Type": "application/json" },
     ...opts,
   });
-  if (!res.ok) throw new Error(res.statusText);
+  if (!res.ok) {
+    const error = new Error(res.statusText);
+    (error as any).status = res.status;
+    throw error;
+  }
   return res.json() as Promise<T>;
 }
 
@@ -28,6 +32,10 @@ function notifyVouchersUpdated() {
 
 export const api = {
   getAllVouchers: () => call<{ data: Voucher[] }>("/vouchers"),
+
+  getRollingVoucher: () => call<Voucher>("/vouchers/rolling"),
+
+  getNewestVoucher: () => call<Voucher>("/vouchers/newest"),
 
   getVoucherDetails: (id: string) =>
     call<Voucher>(`/vouchers/details?id=${encodeURIComponent(id)}`),
@@ -42,7 +50,15 @@ export const api = {
     return result;
   },
 
-  deleteExpired: async () => {
+  createRollingVoucher: async () => {
+    const result = await call<Voucher>("/vouchers/rolling", {
+      method: "POST",
+    });
+    notifyVouchersUpdated();
+    return result;
+  },
+
+  deleteExpiredVouchers: async () => {
     const result = await call<VoucherDeletedResponse>("/vouchers/expired", {
       method: "DELETE",
     });
@@ -50,7 +66,18 @@ export const api = {
     return result;
   },
 
-  deleteSelected: async (ids: string[]) => {
+  deleteExpiredRollingVouchers: async () => {
+    const result = await call<VoucherDeletedResponse>(
+      "/vouchers/expired/rolling",
+      {
+        method: "DELETE",
+      },
+    );
+    notifyVouchersUpdated();
+    return result;
+  },
+
+  deleteSelectedVouchers: async (ids: string[]) => {
     const qs = ids.map(encodeURIComponent).join(",");
     const result = await call<VoucherDeletedResponse>(
       `/vouchers/selected?ids=${qs}`,
