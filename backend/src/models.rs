@@ -7,7 +7,7 @@ pub struct Voucher {
     id: String,
     #[serde(rename = "createdAt")]
     pub created_at: String,
-    name: String,
+    pub name: String,
     code: String,
     #[serde(rename = "authorizedGuestLimit")]
     authorized_guest_limit: Option<u64>,
@@ -30,18 +30,18 @@ pub struct Voucher {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateVoucherRequest {
-    count: u32,
-    name: String,
+    pub count: u32,
+    pub name: String,
     #[serde(rename = "authorizedGuestLimit")]
-    authorized_guest_limit: Option<u64>,
+    pub authorized_guest_limit: Option<u64>,
     #[serde(rename = "timeLimitMinutes")]
-    time_limit_minutes: u64,
+    pub time_limit_minutes: u64,
     #[serde(rename = "dataUsageLimitMBytes")]
-    data_usage_limit_mbytes: Option<u64>,
+    pub data_usage_limit_mbytes: Option<u64>,
     #[serde(rename = "rxRateLimitKbps")]
-    rx_rate_limit_kbps: Option<u64>,
+    pub rx_rate_limit_kbps: Option<u64>,
     #[serde(rename = "txRateLimitKbps")]
-    tx_rate_limit_kbps: Option<u64>,
+    pub tx_rate_limit_kbps: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -61,7 +61,16 @@ async fn main() {
         .route("/api/vouchers", post(create_voucher_handler))
         .route("/api/vouchers/details", get(get_voucher_details_handler))
         .route("/api/vouchers/expired", delete(delete_expired_handler))
+        .route(
+            "/api/vouchers/expired/rolling",
+            delete(delete_expired_rolling_handler),
+        )
         .route("/api/vouchers/newest", get(get_newest_voucher_handler))
+        .route("/api/vouchers/rolling", get(get_rolling_voucher_handler))
+        .route(
+            "/api/vouchers/rolling",
+            post(create_rolling_voucher_handler),
+        )
         .route("/api/vouchers/selected", delete(delete_selected_handler))
         .layer(cors);
 

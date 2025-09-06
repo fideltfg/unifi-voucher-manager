@@ -15,6 +15,7 @@ use crate::{
 
 const UNIFI_API_ROUTE: &str = "proxy/network/integration/v1/sites";
 const DATE_TIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
+const ROLLING_VOUCHER_NAME_PREFIX: &str = "[ROLLING]";
 
 pub static UNIFI_API: OnceLock<UnifiAPI> = OnceLock::new();
 
@@ -206,7 +207,24 @@ impl<'a> UnifiAPI<'a> {
         Ok(result)
     }
 
-    pub async fn get_newest_voucher(&self) -> Result<Option<Voucher>, StatusCode> {
+    pub async fn get_rolling_voucher(&self) -> Result<Option<Voucher>, StatusCode> {
+        let response = self.get_all_vouchers().await?;
+
+        // Find the most recent rolling voucher
+        let rolling = response
+            .data
+            .iter()
+            .filter(|voucher| voucher.name.starts_with(ROLLING_VOUCHER_NAME_PREFIX))
+            .max_by_key(|voucher| {
+                DateTime::parse_from_str(&voucher.created_at, DATE_TIME_FORMAT)
+                    .unwrap_or_else(|_| DateTime::UNIX_EPOCH.fixed_offset())
+            })
+            .cloned();
+
+        Ok(rolling)
+    }
+
+    pub async fn get_newest_voucher(&self) -> Result<Voucher, StatusCode> {
         let response = self.get_all_vouchers().await?;
 
         if response.data.is_empty() {
@@ -222,7 +240,8 @@ impl<'a> UnifiAPI<'a> {
                 DateTime::parse_from_str(&voucher.created_at, DATE_TIME_FORMAT)
                     .unwrap_or_else(|_| DateTime::UNIX_EPOCH.fixed_offset())
             })
-            .cloned();
+            .cloned()
+            .expect("At least one voucher exists");
 
         Ok(newest)
     }
@@ -247,6 +266,50 @@ impl<'a> UnifiAPI<'a> {
             .await?;
         result.vouchers = self.process_vouchers(result.vouchers);
         Ok(result)
+    }
+
+    pub async fn check_rolling_voucher_ip(&self, ip: &str) -> Result<bool, StatusCode> {
+        let response = self.get_all_vouchers().await?;
+
+        // Find a rolling voucher that contains the given IP address
+        let rolling = response
+            .data
+            .iter()
+            .find(|voucher| {
+                voucher.name.starts_with(ROLLING_VOUCHER_NAME_PREFIX) && voucher.name.ends_with(ip)
+            })
+            .cloned();
+
+        Ok(rolling.is_some())
+    }
+
+    pub async fn create_rolling_voucher(&self, ip: &str) -> Result<Voucher, StatusCode> {
+        let request = CreateVoucherRequest {
+            count: 1,
+            name: format!(
+                "{} {}-{}",
+                ROLLING_VOUCHER_NAME_PREFIX,
+                chrono::Local::now().format("%Y%m%d%H%M%S"),
+                ip
+            ),
+            time_limit_minutes: self.environment.rolling_voucher_duration_minutes,
+            authorized_guest_limit: None,
+            data_usage_limit_mbytes: None,
+            tx_rate_limit_kbps: None,
+            rx_rate_limit_kbps: None,
+        };
+
+        let rolling = self
+            .create_voucher(request)
+            .await?
+            .vouchers
+            .first()
+            .cloned();
+
+        match rolling {
+            Some(v) => Ok(v),
+            None => Err(StatusCode::INTERNAL_SERVER_ERROR),
+        }
     }
 
     pub async fn delete_vouchers_by_ids(
@@ -277,6 +340,15 @@ impl<'a> UnifiAPI<'a> {
 
     pub async fn delete_expired_vouchers(&self) -> Result<DeleteResponse, StatusCode> {
         let url = format!("{}?filter=expired.eq(true)", self.voucher_api_url);
+        self.make_request(RequestType::Delete, &url, None::<&()>)
+            .await
+    }
+
+    pub async fn delete_expired_rolling_vouchers(&self) -> Result<DeleteResponse, StatusCode> {
+        let url = format!(
+            "{}?filter=and(expired.eq(true),name.like('{}*'))",
+            self.voucher_api_url, ROLLING_VOUCHER_NAME_PREFIX
+        );
         self.make_request(RequestType::Delete, &url, None::<&()>)
             .await
     }

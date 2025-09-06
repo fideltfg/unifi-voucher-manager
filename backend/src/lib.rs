@@ -10,6 +10,7 @@ pub mod unifi_api;
 const DEFAULT_BACKEND_BIND_HOST: &str = "127.0.0.1";
 const DEFAULT_BACKEND_BIND_PORT: u16 = 8080;
 const DEFAULT_UNIFI_SITE_ID: &str = "default";
+const DEEFAULT_ROLLING_VOUCHER_DURATION_MINUTES: u64 = 480;
 
 pub static ENVIRONMENT: OnceLock<Environment> = OnceLock::new();
 
@@ -20,6 +21,7 @@ pub struct Environment {
     pub unifi_api_key: String,
     pub backend_bind_host: String,
     pub backend_bind_port: u16,
+    pub rolling_voucher_duration_minutes: u64,
     pub unifi_has_valid_cert: bool,
     pub timezone: Tz,
 }
@@ -52,6 +54,13 @@ impl Environment {
             Err(_) => DEFAULT_BACKEND_BIND_PORT,
         };
 
+        let rolling_voucher_duration_minutes = match env::var("ROLLING_VOUCHER_DURATION_MINUTES") {
+            Ok(val) => val
+                .parse()
+                .map_err(|e| format!("Invalid ROLLING_VOUCHER_DURATION_MINUTES: {e}"))?,
+            Err(_) => DEEFAULT_ROLLING_VOUCHER_DURATION_MINUTES,
+        };
+
         let unifi_has_valid_cert: bool = match env::var("UNIFI_HAS_VALID_CERT") {
             Ok(val) => {
                 Self::parse_bool(&val).map_err(|e| format!("Invalid UNIFI_HAS_VALID_CERT: {e}"))?
@@ -82,6 +91,7 @@ impl Environment {
             unifi_api_key,
             backend_bind_host,
             backend_bind_port,
+            rolling_voucher_duration_minutes,
             unifi_has_valid_cert,
             timezone,
         })
