@@ -32,10 +32,10 @@ export default function WelcomePage() {
   }, [visited, rotateVoucher]);
 
   return (
-    <div className="flex-center h-screen w-full px-4">
+    <main className="flex-center h-screen w-full px-4">
       <div className="w-full text-center font-bold text-4xl sm:text-5xl md:text-7xl lg:text-9xl leading-snug">
         {ssid ? `Welcome to ${ssid}!` : "Welcome!"}
       </div>
-    </div>
+    </main>
   );
 }

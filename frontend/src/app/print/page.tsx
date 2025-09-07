@@ -168,12 +168,12 @@ export default function PrintPage() {
   }, [router]);
 
   return (
-    <div className="print-wrapper">
+    <main className="print-wrapper">
       <Suspense
         fallback={<div style={{ textAlign: "center" }}>Loading...</div>}
       >
         <Vouchers />
       </Suspense>
-    </div>
+    </main>
   );
 }

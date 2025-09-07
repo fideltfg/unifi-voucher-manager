@@ -33,7 +33,7 @@ export default function Header() {
       ref={headerRef}
       className="bg-surface border-b border-default sticky top-0 z-7000"
     >
-      <div className="max-w-95/100 mx-auto flex-center-between px-4 py-4">
+      <div className="max-w-95/100 mx-auto flex-center-between px-4 py-4 gap-4">
         <h1 className="text-xl md:text-2xl font-semibold text-brand">
           <span className="block sm:hidden">UVM</span>
           <span className="hidden sm:block">UniFi Voucher Manager</span>

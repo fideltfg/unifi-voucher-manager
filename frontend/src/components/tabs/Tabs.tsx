@@ -56,7 +56,7 @@ export default function Tabs() {
           </button>
         ))}
       </nav>
-      <div className="p-4 overflow-y-auto">
+      <main className="p-4 overflow-y-auto">
         {enabledTabs.map((tabConfig) => {
           const Component = tabConfig.component;
           return (
@@ -68,7 +68,7 @@ export default function Tabs() {
             </div>
           );
         })}
-      </div>
+      </main>
     </>
   );
 }
