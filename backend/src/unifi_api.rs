@@ -1,5 +1,6 @@
 use axum::http::HeaderValue;
 use chrono::DateTime;
+use percent_encoding::{AsciiSet, CONTROLS, utf8_percent_encode};
 use reqwest::{Client, ClientBuilder, StatusCode};
 use std::{sync::OnceLock, time::Duration};
 use tracing::{debug, error, info, warn};
@@ -15,6 +16,7 @@ use crate::{
 const UNIFI_API_ROUTE: &str = "proxy/network/integration/v1/sites";
 const DATE_TIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 const ROLLING_VOUCHER_NAME_PREFIX: &str = "[ROLLING]";
+const FRAGMENT: &AsciiSet = &CONTROLS.add(b'[').add(b']');
 
 pub static UNIFI_API: OnceLock<UnifiAPI> = OnceLock::new();
 
@@ -359,7 +361,8 @@ impl<'a> UnifiAPI<'a> {
     pub async fn delete_expired_rolling_vouchers(&self) -> Result<DeleteResponse, StatusCode> {
         let url = format!(
             "{}?filter=and(expired.eq(true),name.like('{}*'))",
-            self.voucher_api_url, ROLLING_VOUCHER_NAME_PREFIX
+            self.voucher_api_url,
+            utf8_percent_encode(ROLLING_VOUCHER_NAME_PREFIX, FRAGMENT)
         );
         self.make_request(RequestType::Delete, &url, None::<&()>)
             .await
