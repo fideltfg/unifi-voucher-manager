@@ -35,12 +35,13 @@ export default function Header() {
     >
       <div className="max-w-95/100 mx-auto flex-center-between px-4 py-4">
         <h1 className="text-xl md:text-2xl font-semibold text-brand">
-          UniFi Voucher Manager
+          <span className="block sm:hidden">UVM</span>
+          <span className="hidden sm:block">UniFi Voucher Manager</span>
         </h1>
         <div className="flex-center gap-3">
           <button
             onClick={() => router.push("/kiosk")}
-            className="btn p-1 px-2"
+            className="btn text-sm p-1 px-2"
             aria-label="Open Kiosk"
             title="Open Kiosk"
           >
