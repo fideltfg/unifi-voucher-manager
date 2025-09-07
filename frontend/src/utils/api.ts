@@ -4,6 +4,7 @@ import {
   VoucherCreatedResponse,
   VoucherDeletedResponse,
 } from "@/types/voucher";
+import { notifyVouchersUpdated } from "./actions";
 
 function removeNullUndefined<T extends Record<string, any>>(obj: T): T {
   return Object.fromEntries(
@@ -14,7 +15,7 @@ function removeNullUndefined<T extends Record<string, any>>(obj: T): T {
 }
 
 async function call<T>(endpoint: string, opts: RequestInit = {}) {
-  const res = await fetch(`/api/${endpoint}`, {
+  const res = await fetch(`/rust-api/${endpoint}`, {
     headers: { "Content-Type": "application/json" },
     ...opts,
   });
@@ -24,10 +25,6 @@ async function call<T>(endpoint: string, opts: RequestInit = {}) {
     throw error;
   }
   return res.json() as Promise<T>;
-}
-
-function notifyVouchersUpdated() {
-  window.dispatchEvent(new CustomEvent("vouchersUpdated"));
 }
 
 export const api = {
@@ -46,7 +43,7 @@ export const api = {
       method: "POST",
       body: JSON.stringify(filteredData),
     });
-    notifyVouchersUpdated();
+    await notifyVouchersUpdated();
     return result;
   },
 
@@ -54,7 +51,7 @@ export const api = {
     const result = await call<Voucher>("/vouchers/rolling", {
       method: "POST",
     });
-    notifyVouchersUpdated();
+    await notifyVouchersUpdated();
     return result;
   },
 
@@ -62,7 +59,7 @@ export const api = {
     const result = await call<VoucherDeletedResponse>("/vouchers/expired", {
       method: "DELETE",
     });
-    notifyVouchersUpdated();
+    await notifyVouchersUpdated();
     return result;
   },
 
@@ -73,7 +70,7 @@ export const api = {
         method: "DELETE",
       },
     );
-    notifyVouchersUpdated();
+    await notifyVouchersUpdated();
     return result;
   },
 
@@ -85,7 +82,7 @@ export const api = {
         method: "DELETE",
       },
     );
-    notifyVouchersUpdated();
+    await notifyVouchersUpdated();
     return result;
   },
 };
