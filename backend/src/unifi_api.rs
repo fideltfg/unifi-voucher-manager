@@ -290,7 +290,9 @@ impl<'a> UnifiAPI<'a> {
             .data
             .iter()
             .find(|voucher| {
-                voucher.name.starts_with(ROLLING_VOUCHER_NAME_PREFIX) && voucher.name.ends_with(ip)
+                !voucher.expired
+                    && voucher.name.starts_with(ROLLING_VOUCHER_NAME_PREFIX)
+                    && voucher.name.ends_with(ip)
             })
             .cloned();
 

@@ -4,28 +4,28 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Voucher {
-    id: String,
+    pub id: String,
     #[serde(rename = "createdAt")]
     pub created_at: String,
     pub name: String,
-    code: String,
+    pub code: String,
     #[serde(rename = "authorizedGuestLimit")]
-    authorized_guest_limit: Option<u64>,
+    pub authorized_guest_limit: Option<u64>,
     #[serde(rename = "authorizedGuestCount")]
-    authorized_guest_count: u64,
+    pub authorized_guest_count: u64,
     #[serde(rename = "activatedAt")]
     pub activated_at: Option<String>,
     #[serde(rename = "expiresAt")]
     pub expires_at: Option<String>,
-    expired: bool,
+    pub expired: bool,
     #[serde(rename = "timeLimitMinutes")]
-    time_limit_minutes: u64,
+    pub time_limit_minutes: u64,
     #[serde(rename = "dataUsageLimitMBytes")]
-    data_usage_limit_mbytes: Option<u64>,
+    pub data_usage_limit_mbytes: Option<u64>,
     #[serde(rename = "rxRateLimitKbps")]
-    rx_rate_limit_kbps: Option<u64>,
+    pub rx_rate_limit_kbps: Option<u64>,
     #[serde(rename = "txRateLimitKbps")]
-    tx_rate_limit_kbps: Option<u64>,
+    pub tx_rate_limit_kbps: Option<u64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -80,7 +80,7 @@ pub struct DetailsRequest {
 pub struct Site {
     pub id: String,
     #[serde(rename = "internalReference")]
-    internal_reference: String,
+    pub internal_reference: String,
     pub name: String,
 }
 
