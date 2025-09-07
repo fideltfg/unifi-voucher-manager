@@ -152,15 +152,19 @@ To configure the WiFi QR code, you are required to configure the `WIFI_SSID` and
 Rolling vouchers provide a seamless way to automatically generate guest network access codes. When one voucher is used, a new one is automatically created for the next guest.
 
 > [!IMPORTANT]
-> **UniFi Controller Setup Required**
+> **Setup Required**
 >
 > For rolling vouchers to work properly, you **must** configure your UniFi Hotspot:
 >
 > 1. Go to your UniFi Controller -> Insights -> Hotspot
 > 2. Set the **Success Landing Page** to: `https://your-uvm-domain.com/welcome`, the `/welcome` page of UVM
-> 3. To restrict UVM access to the guest subnetwork while still allowing access to `/welcome` set the `GUEST_SUBNETWORK` environment variable
 >
 > Without this configuration, vouchers **will not** automatically roll when guests connect.
+
+> [!CAUTION]
+> To restrict UVM access to the guest subnetwork users while still allowing access to `/welcome` page, set the `GUEST_SUBNETWORK` environment variable. This makes sure guests do not have access to other UVM pages, such as the voucher management interface (the root `/` page).
+>
+> Without this configuration, guests **will be able** to access the voucher management interface of UVM. This means they will be able to both create and delete vouchers by themselves.
 
 #### How Rolling Vouchers Work
 
