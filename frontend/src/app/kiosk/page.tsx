@@ -1,22 +1,19 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import Spinner from "@/components/utils/Spinner";
+import WifiQr from "@/components/utils/WifiQr";
 import { TriState } from "@/types/state";
 import { Voucher } from "@/types/voucher";
 import { api } from "@/utils/api";
 import { formatCode } from "@/utils/format";
-import { useEffect, useCallback, useState } from "react";
 
 export default function KioskPage() {
   const [voucher, setVoucher] = useState<Voucher | null>(null);
   const [state, setState] = useState<TriState | null>(null);
 
   const load = useCallback(async () => {
-    // If already loading, do nothing
-    if (state === "loading") {
-      return;
-    }
-
+    if (state === "loading") return;
     try {
       setState("loading");
       await api.getRollingVoucher().then(setVoucher);
@@ -26,8 +23,6 @@ export default function KioskPage() {
         setState("error");
         return;
       }
-
-      // If 404 (Not Found), create rolling voucher
       try {
         await api.createRollingVoucher().then(setVoucher);
         setState("ok");
@@ -40,38 +35,38 @@ export default function KioskPage() {
   useEffect(() => {
     load();
     window.addEventListener("vouchersUpdated", load);
-
-    return () => {
-      window.removeEventListener("vouchersUpdated", load);
-    };
+    return () => window.removeEventListener("vouchersUpdated", load);
   }, [load]);
 
   function renderContent() {
     switch (state) {
+      case null:
       case "loading":
         return <Spinner />;
       case "error":
-        return "Could not load rolling voucher";
+        return (
+          <div className="text-center text-5xl sm:text-6xl md:text-7xl text-status-danger">
+            Could not load rolling voucher
+          </div>
+        );
       case "ok":
         return (
-          <>
-            Voucher Code
-            <br />
-            {voucher ? (
-              <div className="voucher-code">{formatCode(voucher.code)}</div>
-            ) : (
-              "No voucher available"
-            )}
-          </>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <WifiQr className="w-full sm:h-80 md:h-96 " />
+            <div className="text-center md:text-left">
+              <h2 className="font-medium mb-4 text-3xl sm:text-4xl md:text-5xl">
+                Voucher Code
+              </h2>
+              <div className="voucher-code tracking-widest text-5xl sm:text-6xl md:text-7xl">
+                {voucher ? formatCode(voucher.code) : "No voucher available"}
+              </div>
+            </div>
+          </div>
         );
     }
   }
 
   return (
-    <div className="flex-center h-screen w-full px-4">
-      <div className="w-full text-center font-bold text-4xl sm:text-5xl md:text-7xl lg:text-9xl leading-snug">
-        {renderContent()}
-      </div>
-    </div>
+    <main className="flex-center h-screen w-full px-4">{renderContent()}</main>
   );
 }
