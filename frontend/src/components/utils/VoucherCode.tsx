@@ -42,7 +42,7 @@ export default function VoucherCode({ voucher, contentClassName = "" }: Props) {
       </div>
       <div className="flex-center gap-3">
         <button onClick={handleCopy} className="btn-success">
-          {copied ? "Copied" : "Copy Code"}
+          Copy Code
         </button>
         <button onClick={handlePrint} className="btn-primary">
           Print Voucher

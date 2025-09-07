@@ -93,8 +93,8 @@ export default function VouchersTab() {
       try {
         const res =
           kind === "selected"
-            ? await api.deleteSelected([...selectedVouchers.map((v) => v.id)])
-            : await api.deleteSelected([...expiredIds]);
+            ? await api.deleteSelectedVouchers([...selectedVouchers.map((v) => v.id)])
+            : await api.deleteSelectedVouchers([...expiredIds]);
 
         const count = res.vouchersDeleted || 0;
         if (count > 0) {

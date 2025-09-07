@@ -215,11 +215,8 @@
 @utility hover-lift {
   @apply hover:-translate-y-1 hover:shadow-elevation hover:dark:shadow-elevation-dark;
 }
-@utility hover-subtle {
-  @apply bg-interactive-hover;
-}
 @utility hover-scale {
-  @apply hover:scale-105;
+  @apply hover:scale-105 disabled:hover:scale-100;
 }
 
 /* Slide Animations */

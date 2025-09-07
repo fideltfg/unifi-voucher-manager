@@ -1,6 +1,11 @@
-use crate::{models::*, unifi_api::*};
-use axum::{extract::Query, http::StatusCode, response::Json};
-use tracing::{debug, error};
+use axum::{
+    extract::Query,
+    http::{HeaderMap, StatusCode},
+    response::Json,
+};
+use tracing::{debug, error, info};
+
+use crate::{models::*, unifi_api::UNIFI_API};
 
 pub async fn get_vouchers_handler() -> Result<Json<GetVouchersResponse>, StatusCode> {
     debug!("Received request to get vouchers");
@@ -14,7 +19,20 @@ pub async fn get_vouchers_handler() -> Result<Json<GetVouchersResponse>, StatusC
     }
 }
 
-pub async fn get_newest_voucher_handler() -> Result<Json<Option<Voucher>>, StatusCode> {
+pub async fn get_rolling_voucher_handler() -> Result<Json<Voucher>, StatusCode> {
+    debug!("Received request to get rolling voucher");
+    let client = UNIFI_API.get().expect("UnifiAPI not initialized");
+    match client.get_rolling_voucher().await {
+        Ok(Some(voucher)) => Ok(Json(voucher)),
+        Ok(None) => Err(StatusCode::NOT_FOUND),
+        Err(e) => {
+            error!("Failed to get rolling voucher: {}", e);
+            Err(e)
+        }
+    }
+}
+
+pub async fn get_newest_voucher_handler() -> Result<Json<Voucher>, StatusCode> {
     debug!("Received request to get newest voucher");
     let client = UNIFI_API.get().expect("UnifiAPI not initialized");
     match client.get_newest_voucher().await {
@@ -54,6 +72,38 @@ pub async fn create_voucher_handler(
     }
 }
 
+pub async fn create_rolling_voucher_handler(
+    headers: HeaderMap,
+) -> Result<Json<Voucher>, StatusCode> {
+    debug!("Received request to create voucher");
+
+    let client = UNIFI_API.get().expect("UnifiAPI not initialized");
+
+    if let Some(forwarded) = headers.get("x-forwarded-for") {
+        if let Ok(ip) = forwarded.to_str() {
+            debug!("Client IP from x-forwarded-for: {}", ip);
+
+            // Check if user already rotated the rolling voucher
+            if client.check_rolling_voucher_ip(ip).await? {
+                info!("Rolling voucher already rotated for IP: {}", ip);
+                return Err(StatusCode::FORBIDDEN);
+            }
+
+            // Voucher rotation allowed, create a new rolling voucher
+            match client.create_rolling_voucher(ip).await {
+                Ok(response) => return Ok(Json(response)),
+                Err(e) => {
+                    error!("Failed to create rolling voucher: {}", e);
+                    return Err(e);
+                }
+            }
+        }
+    }
+
+    error!("Invalid x-forwarded-for header");
+    Err(StatusCode::BAD_REQUEST)
+}
+
 pub async fn delete_selected_handler(
     Query(params): Query<DeleteRequest>,
 ) -> Result<Json<DeleteResponse>, StatusCode> {
@@ -76,6 +126,18 @@ pub async fn delete_expired_handler() -> Result<Json<DeleteResponse>, StatusCode
         Ok(response) => Ok(Json(response)),
         Err(e) => {
             error!("Failed to delete expired vouchers: {}", e);
+            Err(e)
+        }
+    }
+}
+
+pub async fn delete_expired_rolling_handler() -> Result<Json<DeleteResponse>, StatusCode> {
+    debug!("Received request to delete expired rolling voucher");
+    let client = UNIFI_API.get().expect("UnifiAPI not initialized");
+    match client.delete_expired_rolling_vouchers().await {
+        Ok(response) => Ok(Json(response)),
+        Err(e) => {
+            error!("Failed to delete expired rolling voucher: {}", e);
             Err(e)
         }
     }

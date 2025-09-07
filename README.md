@@ -3,7 +3,7 @@
 [![Docker Image Version (latest by date)](https://img.shields.io/docker/v/etiennecollin/unifi-voucher-manager?sort=semver&label=Version&logo=docker&color=blue) ![Docker Pulls](https://img.shields.io/docker/pulls/etiennecollin/unifi-voucher-manager?label=Pulls&logo=docker&color=blue)](https://hub.docker.com/r/etiennecollin/unifi-voucher-manager)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/etiennecollin/unifi-voucher-manager/release_docker.yaml?label=Docker%20Build&logo=github) ![GitHub License](https://img.shields.io/github/license/etiennecollin/unifi-voucher-manager?label=License&logo=github&color=red)](https://github.com/etiennecollin/unifi-voucher-manager)
 
-A modern, touch-friendly web application for managing WiFi vouchers on UniFi controllers.
+UVM is a modern, touch-friendly web application for managing WiFi vouchers on UniFi controllers.
 Perfect for businesses, cafes, hotels, and home networks that need to provide guest WiFi access.
 
 ![WiFi Voucher Manager](./assets/view.png)
@@ -20,6 +20,9 @@ Perfect for businesses, cafes, hotels, and home networks that need to provide gu
 - [⚙️ Configuration](#-configuration)
   - [Environment Variables](#environment-variables)
   - [Getting UniFi API Credentials](#getting-unifi-api-credentials)
+  - [Rolling Vouchers and Kiosk Page](#rolling-vouchers-and-kiosk-page)
+    - [How Rolling Vouchers Work](#how-rolling-vouchers-work)
+    - [Kiosk Display](#kiosk-display)
 - [🐛 Troubleshooting](#-troubleshooting)
   - [Common Issues](#common-issues)
   - [Getting Help](#getting-help)
@@ -37,18 +40,20 @@ Perfect for businesses, cafes, hotels, and home networks that need to provide gu
   - Guest count limits
   - Data usage limits
   - Upload/download speed limits
-- **View All Vouchers** - Browse and search existing vouchers by name
-- **Search Vouchers** - Search vouchers by name
-- **Bulk Operations** - Select and delete multiple vouchers
+- **Browse Vouchers** - Browse and search existing vouchers by name
+- **Bulk Operations** - Select and delete multiple vouchers at once
+- **Print Vouchers** - Print vouchers in either list or grid format; thermal printers friendly
 - **Auto-cleanup** - Remove expired vouchers with a single click
 - **QR Code** - Easily connect guests to your network
+- **Rolling Vouchers** - Automatically generate a voucher for the next guest when the current one gets used
+- **Kiosk Page** - A nice page to display your QR code and current rolling voucher
 
 ### 🎨 Modern Interface
 
-- **Touch-Friendly** – Optimized for tablet, mobile, and desktop.
-- **Dark/Light Mode** – Follows system preference, with manual override.
+- **Touch-Friendly** – Optimized for tablet, mobile, and desktop
+- **Dark/Light Mode** – Follows system preference, with manual override
 - **Responsive Design** - Works seamlessly across all screen sizes
-- **Smooth Animations** – Semantic transitions for polished UX.
+- **Smooth Animations** – Semantic transitions for polished UX
 - **Real-time Notifications** - Instant feedback for all operations
 
 ### 🔧 Technical Features
@@ -115,23 +120,25 @@ Make sure to configure the required variables. The optional variables generally 
 
 To configure the WiFi QR code, you are required to configure the `WIFI_SSID` and `WIFI_PASSWORD` variables.
 
-| Variable                  | Required? | Description                                                                                                                                                                                                                                                                                                                                                                                     | Example                                                  | Type                                                                                       |
-| ------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `UNIFI_CONTROLLER_URL`    | Required  | URL to your UniFi controller with protocol (`http://` or `https://`).                                                                                                                                                                                                                                                                                                                           | `https://unifi.example.com` or `https://192.168.8.1:443` | `string`                                                                                   |
-| `UNIFI_API_KEY`           | Required  | API Key for your UniFi controller.                                                                                                                                                                                                                                                                                                                                                              | `abc123...`                                              | `string`                                                                                   |
-| `UNIFI_HAS_VALID_CERT`    | Optional  | Whether your UniFi controller uses a valid SSL certificate. This should normally be set to `true`, especially if you access the controller through a reverse proxy or another setup that provides trusted certificates (e.g., Let's Encrypt). **If you connect directly to the controller’s IP address (which usually serves a self-signed certificate), you may need to set this to `false`.** | `true` (default)                                         | `bool`                                                                                     |
-| `UNIFI_SITE_ID`           | Optional  | Site ID of your UniFi controller. Using the value `default`, the backend will try to fetch the ID of the default site.                                                                                                                                                                                                                                                                          | `default` (default)                                      | `string`                                                                                   |
-| `FRONTEND_BIND_HOST`      | Optional  | Address on which the frontend server binds.                                                                                                                                                                                                                                                                                                                                                     | `0.0.0.0` (default)                                      | `IPv4`                                                                                     |
-| `FRONTEND_BIND_PORT`      | Optional  | Port on which the frontend server binds.                                                                                                                                                                                                                                                                                                                                                        | `3000` (default)                                         | `u16`                                                                                      |
-| `FRONTEND_TO_BACKEND_URL` | Optional  | URL where the frontend will make its API requests to the backend.                                                                                                                                                                                                                                                                                                                               | `http://127.0.0.1` (default)                             | `URL`                                                                                      |
-| `BACKEND_BIND_HOST`       | Optional  | Address on which the server binds.                                                                                                                                                                                                                                                                                                                                                              | `127.0.0.1` (default)                                    | `IPv4`                                                                                     |
-| `BACKEND_BIND_PORT`       | Optional  | Port on which the backend server binds.                                                                                                                                                                                                                                                                                                                                                         | `8080` (default)                                         | `u16`                                                                                      |
-| `BACKEND_LOG_LEVEL`       | Optional  | Log level of the Rust backend.                                                                                                                                                                                                                                                                                                                                                                  | `info`(default)                                          | `trace\|debug\|info\|warn\|error`                                                          |
-| `TIMEZONE`                | Optional  | [Timezone identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) used to format dates and time.                                                                                                                                                                                                                                                                         | `UTC` (default)                                          | [`timezone identifier`](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) |
-| `WIFI_SSID`               | Optional  | WiFi SSID used for the QR code. (required for QR code to be generated)                                                                                                                                                                                                                                                                                                                          | `My WiFi SSID`                                           | `string`                                                                                   |
-| `WIFI_PASSWORD`           | Optional  | WiFi password used for the QR code. If the WiFi network does not have a password, set to an empty string `""`. (required for QR code to be generated)                                                                                                                                                                                                                                           | `My WiFi Password`                                       | `string`                                                                                   |
-| `WIFI_TYPE`               | Optional  | WiFi security type used. Defaults to `WPA` if a password is provided and `nopass` otherwise.                                                                                                                                                                                                                                                                                                    | `WPA`                                                    | `WPA\|WEP\|nopass`                                                                         |
-| `WIFI_HIDDEN`             | Optional  | Whether the WiFi SSID is hidden or broadcasted.                                                                                                                                                                                                                                                                                                                                                 | `false` (default)                                        | `bool`                                                                                     |
+| Variable                           | Required? | Description                                                                                                                                                                                                                                                                                                                                                                                     | Example                                                  | Type                                                                                       |
+| ---------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `UNIFI_CONTROLLER_URL`             | Required  | URL to your UniFi controller with protocol (`http://` or `https://`).                                                                                                                                                                                                                                                                                                                           | `https://unifi.example.com` or `https://192.168.8.1:443` | `string`                                                                                   |
+| `UNIFI_API_KEY`                    | Required  | API Key for your UniFi controller.                                                                                                                                                                                                                                                                                                                                                              | `abc123...`                                              | `string`                                                                                   |
+| `UNIFI_HAS_VALID_CERT`             | Optional  | Whether your UniFi controller uses a valid SSL certificate. This should normally be set to `true`, especially if you access the controller through a reverse proxy or another setup that provides trusted certificates (e.g., Let's Encrypt). **If you connect directly to the controller’s IP address (which usually serves a self-signed certificate), you may need to set this to `false`.** | `true` (default)                                         | `bool`                                                                                     |
+| `UNIFI_SITE_ID`                    | Optional  | Site ID of your UniFi controller. Using the value `default`, the backend will try to fetch the ID of the default site.                                                                                                                                                                                                                                                                          | `default` (default)                                      | `string`                                                                                   |
+| `GUEST_SUBNETWORK`                 | Optional  | Restrict guest subnetwork access to UVM while still permitting access to the `/welcome` page, which users are redirected to from the UniFi captive portal. For more details, see [Rolling Vouchers and Kiosk Page](#rolling-vouchers-and-kiosk-page).                                                                                                                                           | `10.0.5.0/24`                                            | `IPv4 CIDR`                                                                                |
+| `FRONTEND_BIND_HOST`               | Optional  | Address on which the frontend server binds.                                                                                                                                                                                                                                                                                                                                                     | `0.0.0.0` (default)                                      | `IPv4`                                                                                     |
+| `FRONTEND_BIND_PORT`               | Optional  | Port on which the frontend server binds.                                                                                                                                                                                                                                                                                                                                                        | `3000` (default)                                         | `u16`                                                                                      |
+| `FRONTEND_TO_BACKEND_URL`          | Optional  | URL where the frontend will make its API requests to the backend.                                                                                                                                                                                                                                                                                                                               | `http://127.0.0.1` (default)                             | `URL`                                                                                      |
+| `BACKEND_BIND_HOST`                | Optional  | Address on which the server binds.                                                                                                                                                                                                                                                                                                                                                              | `127.0.0.1` (default)                                    | `IPv4`                                                                                     |
+| `BACKEND_BIND_PORT`                | Optional  | Port on which the backend server binds.                                                                                                                                                                                                                                                                                                                                                         | `8080` (default)                                         | `u16`                                                                                      |
+| `BACKEND_LOG_LEVEL`                | Optional  | Log level of the Rust backend.                                                                                                                                                                                                                                                                                                                                                                  | `info`(default)                                          | `trace\|debug\|info\|warn\|error`                                                          |
+| `TIMEZONE`                         | Optional  | [Timezone identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) used to format dates and time.                                                                                                                                                                                                                                                                         | `UTC` (default)                                          | [`timezone identifier`](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) |
+| `ROLLING_VOUCHER_DURATION_MINUTES` | Optional  | Number of minutes each rolling voucher will be valid for once activated.                                                                                                                                                                                                                                                                                                                        | `480` (default)                                          | `minutes`                                                                                  |
+| `WIFI_SSID`                        | Optional  | WiFi SSID used for the QR code. (required for QR code to be generated)                                                                                                                                                                                                                                                                                                                          | `My WiFi SSID`                                           | `string`                                                                                   |
+| `WIFI_PASSWORD`                    | Optional  | WiFi password used for the QR code. If the WiFi network does not have a password, set to an empty string `""`. (required for QR code to be generated)                                                                                                                                                                                                                                           | `My WiFi Password`                                       | `string`                                                                                   |
+| `WIFI_TYPE`                        | Optional  | WiFi security type used. Defaults to `WPA` if a password is provided and `nopass` otherwise.                                                                                                                                                                                                                                                                                                    | `WPA`                                                    | `WPA\|WEP\|nopass`                                                                         |
+| `WIFI_HIDDEN`                      | Optional  | Whether the WiFi SSID is hidden or broadcasted.                                                                                                                                                                                                                                                                                                                                                 | `false` (default)                                        | `bool`                                                                                     |
 
 ### Getting UniFi API Credentials
 
@@ -139,6 +146,38 @@ To configure the WiFi QR code, you are required to configure the `WIFI_SSID` and
 2. **Navigate to Settings -> Control Plane -> Integration**
 3. **Create a new API key** by giving it a name and an expiration.
 4. **Find your Site ID** in the controller URL or on [unifi.ui.com](https://unifi.ui.com)
+
+### Rolling Vouchers and Kiosk Page
+
+Rolling vouchers provide a seamless way to automatically generate guest network access codes. When one voucher is used, a new one is automatically created for the next guest.
+
+> [!IMPORTANT]
+> **UniFi Controller Setup Required**
+>
+> For rolling vouchers to work properly, you **must** configure your UniFi Hotspot:
+>
+> 1. Go to your UniFi Controller -> Insights -> Hotspot
+> 2. Set the **Success Landing Page** to: `https://your-uvm-domain.com/welcome`, the `/welcome` page of UVM
+> 3. To restrict UVM access to the guest subnetwork while still allowing access to `/welcome` set the `GUEST_SUBNETWORK` environment variable
+>
+> Without this configuration, vouchers **will not** automatically roll when guests connect.
+
+#### How Rolling Vouchers Work
+
+1. **Initial Setup**: Rolling vouchers are generated automatically when needed
+2. **Guest Connection**: When a guest connects to your network, they're redirected to the `/welcome` page
+3. **Automatic Rolling**: The welcome page triggers the creation of a new voucher for the next guest
+   - Rolling vouchers are created with special naming conventions to distinguish them from manually created vouchers, making them easy to identify in your voucher management interface
+4. **IP-Based Uniqueness**: Each IP address can only generate one voucher per session (prevents abuse from page reloads)
+5. **Daily Maintenance**: To prevent clutter, expired rolling vouchers are automatically deleted at midnight (based on your configured `TIMEZONE` in [Environment Variables](#environment-variables))
+
+#### Kiosk Display
+
+The kiosk page (`/kiosk`) provides a guest-friendly interface displaying:
+
+- **QR Code**: For easy network connection (if configured in [Environment Variables](#environment-variables))
+- **Current Voucher**: The active rolling voucher code
+- **Real-time Updates**: Automatically refreshes when vouchers change
 
 ## 🐛 Troubleshooting
 
@@ -155,9 +194,9 @@ To configure the WiFi QR code, you are required to configure the `WIFI_SSID` and
   - Check all environment variables are set
   - Verify Docker container has network access to UniFi controller
   - Check logs: `docker logs unifi-voucher-manager`
-- **The WiFi QR code button is seems disabled**
-  - Check the [Environment Variables](#environment-variables) section and make sure you configured the variables required for the WiFi QR code.
-  - Check the browser console for variable configuration errors (generally by hitting `F12` and going to the 'console' tab).
+- **The WiFi QR code button is disabled**
+  - Check the [Environment Variables](#environment-variables) section and make sure you configured the variables required for the WiFi QR code
+  - Check the browser console for variable configuration errors (generally by hitting `F12` and going to the 'console' tab)
 
 ### Getting Help
 

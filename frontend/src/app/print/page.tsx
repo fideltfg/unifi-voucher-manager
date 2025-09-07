@@ -13,11 +13,38 @@ import {
 } from "@/utils/format";
 import { useGlobal } from "@/contexts/GlobalContext";
 import { formatCode } from "@/utils/format";
+import Spinner from "@/components/utils/Spinner";
 
 export type PrintMode = "list" | "grid";
 
-function VoucherBlock({ voucher }: { voucher: Voucher }) {
+// This component represents a single voucher card to be printed
+function VoucherPrintCard({ voucher }: { voucher: Voucher }) {
   const { wifiConfig, wifiString } = useGlobal();
+
+  const fields = [
+    {
+      label: "Duration",
+      value: formatDuration(voucher.timeLimitMinutes),
+    },
+    {
+      label: "Max Guests",
+      value: formatMaxGuests(voucher.authorizedGuestLimit),
+    },
+    {
+      label: "Data Limit",
+      value: voucher.dataUsageLimitMBytes
+        ? formatBytes(voucher.dataUsageLimitMBytes * 1024 * 1024)
+        : "Unlimited",
+    },
+    {
+      label: "Down Speed",
+      value: formatSpeed(voucher.rxRateLimitKbps),
+    },
+    {
+      label: "Up Speed",
+      value: formatSpeed(voucher.txRateLimitKbps),
+    },
+  ];
 
   return (
     <div className="print-voucher">
@@ -27,38 +54,12 @@ function VoucherBlock({ voucher }: { voucher: Voucher }) {
 
       <div className="print-voucher-code">{formatCode(voucher.code)}</div>
 
-      <div className="print-info-row">
-        <span className="print-label">Duration:</span>
-        <span className="print-value">
-          {formatDuration(voucher.timeLimitMinutes)}
-        </span>
-      </div>
-      <div className="print-info-row">
-        <span className="print-label">Max Guests:</span>
-        <span className="print-value">
-          {formatMaxGuests(voucher.authorizedGuestLimit)}
-        </span>
-      </div>
-      <div className="print-info-row">
-        <span className="print-label">Data Limit:</span>
-        <span className="print-value">
-          {voucher.dataUsageLimitMBytes
-            ? formatBytes(voucher.dataUsageLimitMBytes * 1024 * 1024)
-            : "Unlimited"}
-        </span>
-      </div>
-      <div className="print-info-row">
-        <span className="print-label">Down Speed:</span>
-        <span className="print-value">
-          {formatSpeed(voucher.rxRateLimitKbps)}
-        </span>
-      </div>
-      <div className="print-info-row">
-        <span className="print-label">Up Speed:</span>
-        <span className="print-value">
-          {formatSpeed(voucher.txRateLimitKbps)}
-        </span>
-      </div>
+      {fields.map((field) => (
+        <div className="print-info-row">
+          <span className="print-label">{field.label}:</span>
+          <span className="print-value">{field.value}</span>
+        </div>
+      ))}
 
       {wifiConfig && (
         <div className="print-qr-section">
@@ -102,6 +103,7 @@ function VoucherBlock({ voucher }: { voucher: Voucher }) {
   );
 }
 
+// This component handles displaying and printing the vouchers based on URL params
 function Vouchers() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -144,12 +146,13 @@ function Vouchers() {
   ) : (
     <div className={mode === "grid" ? "print-grid" : "print-list"}>
       {vouchers.map((v) => (
-        <VoucherBlock key={v.id} voucher={v} />
+        <VoucherPrintCard key={v.id} voucher={v} />
       ))}
     </div>
   );
 }
 
+// This sets up the print page itself
 export default function PrintPage() {
   const router = useRouter();
 
@@ -165,12 +168,10 @@ export default function PrintPage() {
   }, [router]);
 
   return (
-    <div className="print-wrapper">
-      <Suspense
-        fallback={<div style={{ textAlign: "center" }}>Loading...</div>}
-      >
+    <main className="print-wrapper">
+      <Suspense fallback={<Spinner />}>
         <Vouchers />
       </Suspense>
-    </div>
+    </main>
   );
 }

@@ -6,6 +6,15 @@ export function formatMaxGuests(maxGuests: number | null | undefined) {
   return !maxGuests ? "Unlimited" : Math.max(maxGuests, 0);
 }
 
+export function formatStatus(
+  expired: boolean,
+  activatedAt: string | null | undefined,
+) {
+  if (expired) return "Expired";
+  if (activatedAt) return "Active";
+  return "Available";
+}
+
 export function formatDuration(m: number | null | undefined) {
   if (!m) return "Unlimited";
   const days = Math.floor(m / 1440),

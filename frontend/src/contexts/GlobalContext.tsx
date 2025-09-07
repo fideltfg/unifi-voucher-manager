@@ -1,6 +1,7 @@
 "use client";
 
 import { Theme } from "@/components/utils/ThemeSwitcher";
+import { useServerEvents } from "@/hooks/useServerEvents";
 import {
   generateWifiConfig,
   generateWiFiQRString,
@@ -22,8 +23,8 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [wifiConfig, setWifiConfig] = useState<WifiConfig | null>(null);
   const [wifiString, setWifiString] = useState<string | null>(null);
-
   const [theme, setTheme] = useState<Theme>("system");
+  useServerEvents();
 
   // WiFi setup
   useEffect(() => {
