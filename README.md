@@ -50,10 +50,10 @@ Perfect for businesses, cafes, hotels, and home networks that need to provide gu
 
 ### 🎨 Modern Interface
 
-- **Touch-Friendly** – Optimized for tablet, mobile, and desktop.
-- **Dark/Light Mode** – Follows system preference, with manual override.
+- **Touch-Friendly** – Optimized for tablet, mobile, and desktop
+- **Dark/Light Mode** – Follows system preference, with manual override
 - **Responsive Design** - Works seamlessly across all screen sizes
-- **Smooth Animations** – Semantic transitions for polished UX.
+- **Smooth Animations** – Semantic transitions for polished UX
 - **Real-time Notifications** - Instant feedback for all operations
 
 ### 🔧 Technical Features
@@ -126,6 +126,7 @@ To configure the WiFi QR code, you are required to configure the `WIFI_SSID` and
 | `UNIFI_API_KEY`                    | Required  | API Key for your UniFi controller.                                                                                                                                                                                                                                                                                                                                                              | `abc123...`                                              | `string`                                                                                   |
 | `UNIFI_HAS_VALID_CERT`             | Optional  | Whether your UniFi controller uses a valid SSL certificate. This should normally be set to `true`, especially if you access the controller through a reverse proxy or another setup that provides trusted certificates (e.g., Let's Encrypt). **If you connect directly to the controller’s IP address (which usually serves a self-signed certificate), you may need to set this to `false`.** | `true` (default)                                         | `bool`                                                                                     |
 | `UNIFI_SITE_ID`                    | Optional  | Site ID of your UniFi controller. Using the value `default`, the backend will try to fetch the ID of the default site.                                                                                                                                                                                                                                                                          | `default` (default)                                      | `string`                                                                                   |
+| `GUEST_SUBNETWORK`                 | Optional  | Restrict guest subnetwork access to UVM while still permitting access to the `/welcome` page, which users are redirected to from the UniFi captive portal. For more details, see [Rolling Vouchers and Kiosk Page](#rolling-vouchers-and-kiosk-page).                                                                                                                                           | `10.0.5.0/24`                                            | `IPv4 CIDR`                                                                                |
 | `FRONTEND_BIND_HOST`               | Optional  | Address on which the frontend server binds.                                                                                                                                                                                                                                                                                                                                                     | `0.0.0.0` (default)                                      | `IPv4`                                                                                     |
 | `FRONTEND_BIND_PORT`               | Optional  | Port on which the frontend server binds.                                                                                                                                                                                                                                                                                                                                                        | `3000` (default)                                         | `u16`                                                                                      |
 | `FRONTEND_TO_BACKEND_URL`          | Optional  | URL where the frontend will make its API requests to the backend.                                                                                                                                                                                                                                                                                                                               | `http://127.0.0.1` (default)                             | `URL`                                                                                      |
@@ -157,6 +158,7 @@ Rolling vouchers provide a seamless way to automatically generate guest network 
 >
 > 1. Go to your UniFi Controller -> Insights -> Hotspot
 > 2. Set the **Success Landing Page** to: `https://your-uvm-domain.com/welcome`, the `/welcome` page of UVM
+> 3. To restrict UVM access to the guest subnetwork while still allowing access to `/welcome` set the `GUEST_SUBNETWORK` environment variable
 >
 > Without this configuration, vouchers **will not** automatically roll when guests connect.
 
@@ -165,7 +167,7 @@ Rolling vouchers provide a seamless way to automatically generate guest network 
 1. **Initial Setup**: Rolling vouchers are generated automatically when needed
 2. **Guest Connection**: When a guest connects to your network, they're redirected to the `/welcome` page
 3. **Automatic Rolling**: The welcome page triggers the creation of a new voucher for the next guest
-   - Rolling vouchers are created with special naming conventions to distinguish them from manually created vouchers, making them easy to identify in your voucher management interface.
+   - Rolling vouchers are created with special naming conventions to distinguish them from manually created vouchers, making them easy to identify in your voucher management interface
 4. **IP-Based Uniqueness**: Each IP address can only generate one voucher per session (prevents abuse from page reloads)
 5. **Daily Maintenance**: To prevent clutter, expired rolling vouchers are automatically deleted at midnight (based on your configured `TIMEZONE` in [Environment Variables](#environment-variables))
 
@@ -193,8 +195,8 @@ The kiosk page (`/kiosk`) provides a guest-friendly interface displaying:
   - Verify Docker container has network access to UniFi controller
   - Check logs: `docker logs unifi-voucher-manager`
 - **The WiFi QR code button is disabled**
-  - Check the [Environment Variables](#environment-variables) section and make sure you configured the variables required for the WiFi QR code.
-  - Check the browser console for variable configuration errors (generally by hitting `F12` and going to the 'console' tab).
+  - Check the [Environment Variables](#environment-variables) section and make sure you configured the variables required for the WiFi QR code
+  - Check the browser console for variable configuration errors (generally by hitting `F12` and going to the 'console' tab)
 
 ### Getting Help
 
