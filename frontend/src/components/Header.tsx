@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ThemeSwitcher from "@/components/utils/ThemeSwitcher";
 import WifiQrModal from "@/components/modals/WifiQrModal";
 import { useGlobal } from "@/contexts/GlobalContext";
@@ -9,8 +9,12 @@ import { useRouter } from "next/navigation";
 export default function Header() {
   const [showWifi, setShowWifi] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
-  const { wifiConfig } = useGlobal();
   const router = useRouter();
+  const { wifiConfig, wifiString } = useGlobal();
+  const qrAvailable: boolean = useMemo(
+    () => !!(wifiConfig && wifiString),
+    [wifiConfig, wifiString],
+  );
 
   useEffect(() => {
     // Set initial height and update on resize
@@ -50,7 +54,7 @@ export default function Header() {
           <button
             onClick={() => setShowWifi(true)}
             className="btn p-1"
-            disabled={!wifiConfig}
+            disabled={!qrAvailable}
             aria-label="Open Wi‑Fi QR code"
             title="Open Wi‑Fi QR code"
           >
@@ -65,7 +69,7 @@ export default function Header() {
           <ThemeSwitcher />
         </div>
       </div>
-      {showWifi && wifiConfig && (
+      {qrAvailable && showWifi && (
         <WifiQrModal onClose={() => setShowWifi(false)} />
       )}
     </header>

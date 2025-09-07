@@ -7,10 +7,12 @@ import { TriState } from "@/types/state";
 import { Voucher } from "@/types/voucher";
 import { api } from "@/utils/api";
 import { formatCode } from "@/utils/format";
+import { useGlobal } from "@/contexts/GlobalContext";
 
 export default function KioskPage() {
   const [voucher, setVoucher] = useState<Voucher | null>(null);
   const [state, setState] = useState<TriState | null>(null);
+  const { wifiConfig, wifiString } = useGlobal();
 
   const load = useCallback(async () => {
     if (state === "loading") return;
@@ -38,7 +40,7 @@ export default function KioskPage() {
     return () => window.removeEventListener("vouchersUpdated", load);
   }, [load]);
 
-  function renderContent() {
+  const renderContent = useCallback(() => {
     switch (state) {
       case null:
       case "loading":
@@ -50,10 +52,13 @@ export default function KioskPage() {
           </div>
         );
       case "ok":
+        const qrAvailable = wifiConfig && wifiString;
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <WifiQr className="w-full sm:h-80 md:h-96 " />
-            <div className="text-center md:text-left">
+          <div
+            className={`grid grid-cols-1 ${qrAvailable && "md:grid-cols-2 "} gap-8 items-center`}
+          >
+            {qrAvailable && <WifiQr className="w-full sm:h-80 md:h-96 " />}
+            <div className={`text-center ${qrAvailable && "md:text-left"}`}>
               <h2 className="font-medium mb-4 text-3xl sm:text-4xl md:text-5xl">
                 Voucher Code
               </h2>
@@ -64,7 +69,7 @@ export default function KioskPage() {
           </div>
         );
     }
-  }
+  }, [voucher, state, wifiConfig, wifiString]);
 
   return (
     <main className="flex-center h-screen w-full px-4">{renderContent()}</main>
