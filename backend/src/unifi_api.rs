@@ -1,12 +1,11 @@
 use axum::http::HeaderValue;
 use chrono::DateTime;
-use chrono_tz::Tz;
 use reqwest::{Client, ClientBuilder, StatusCode};
 use std::{sync::OnceLock, time::Duration};
 use tracing::{debug, error, info, warn};
 
 use crate::{
-    ENVIRONMENT, Environment,
+    environment::{ENVIRONMENT, Environment},
     models::{
         CreateVoucherRequest, CreateVoucherResponse, DeleteResponse, ErrorResponse,
         GetSitesResponse, GetVouchersResponse, Voucher,
@@ -85,6 +84,36 @@ impl<'a> UnifiAPI<'a> {
         Ok(unifi_api)
     }
 
+    fn format_unifi_date(&self, rfc3339_string: &str) -> String {
+        match DateTime::parse_from_rfc3339(rfc3339_string) {
+            Ok(dt) => {
+                let local_time = dt.with_timezone(&self.environment.timezone);
+                local_time.format(DATE_TIME_FORMAT).to_string()
+            }
+            Err(_) => {
+                error!("Failed to parse RFC3339 date: {}", rfc3339_string);
+                rfc3339_string.to_string()
+            }
+        }
+    }
+
+    fn process_voucher(&self, voucher: &mut Voucher) {
+        voucher.created_at = self.format_unifi_date(&voucher.created_at);
+        if let Some(activated_at) = &mut voucher.activated_at {
+            *activated_at = self.format_unifi_date(activated_at);
+        }
+        if let Some(expires_at) = &mut voucher.expires_at {
+            *expires_at = self.format_unifi_date(expires_at);
+        }
+    }
+
+    fn process_vouchers(&self, mut vouchers: Vec<Voucher>) -> Vec<Voucher> {
+        vouchers.iter_mut().for_each(|voucher| {
+            self.process_voucher(voucher);
+        });
+        vouchers
+    }
+
     async fn make_request<
         T: serde::ser::Serialize + Sized,
         U: serde::de::DeserializeOwned + Sized,
@@ -160,23 +189,6 @@ impl<'a> UnifiAPI<'a> {
         })
     }
 
-    fn process_voucher(&self, voucher: &mut Voucher) {
-        voucher.created_at = format_unifi_date(&voucher.created_at, &self.environment.timezone);
-        if let Some(activated_at) = &mut voucher.activated_at {
-            *activated_at = format_unifi_date(activated_at, &self.environment.timezone);
-        }
-        if let Some(expires_at) = &mut voucher.expires_at {
-            *expires_at = format_unifi_date(expires_at, &self.environment.timezone);
-        }
-    }
-
-    fn process_vouchers(&self, mut vouchers: Vec<Voucher>) -> Vec<Voucher> {
-        vouchers.iter_mut().for_each(|voucher| {
-            self.process_voucher(voucher);
-        });
-        vouchers
-    }
-
     async fn get_default_site_id(&self) -> Result<String, StatusCode> {
         let url = format!(
             "{}?filter=or(internalReference.eq('default'),name.eq('Default'))",
@@ -241,7 +253,7 @@ impl<'a> UnifiAPI<'a> {
                     .unwrap_or_else(|_| DateTime::UNIX_EPOCH.fixed_offset())
             })
             .cloned()
-            .expect("At least one voucher exists");
+            .expect("At least one voucher should exist");
 
         Ok(newest)
     }
@@ -351,18 +363,5 @@ impl<'a> UnifiAPI<'a> {
         );
         self.make_request(RequestType::Delete, &url, None::<&()>)
             .await
-    }
-}
-
-fn format_unifi_date(rfc3339_string: &str, target_timezone: &Tz) -> String {
-    match DateTime::parse_from_rfc3339(rfc3339_string) {
-        Ok(dt) => {
-            let local_time = dt.with_timezone(target_timezone);
-            local_time.format(DATE_TIME_FORMAT).to_string()
-        }
-        Err(_) => {
-            error!("Failed to parse RFC3339 date: {}", rfc3339_string);
-            rfc3339_string.to_string()
-        }
     }
 }

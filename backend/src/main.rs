@@ -3,18 +3,21 @@ use axum::{
     http::{self, Method},
     routing::{delete, get, post},
 };
-use backend::{
-    ENVIRONMENT, Environment,
-    handlers::*,
-    unifi_api::{UNIFI_API, UnifiAPI},
-};
 use tower_http::cors::{Any, CorsLayer};
 use tracing::{error, info, level_filters::LevelFilter, warn};
 use tracing_subscriber::EnvFilter;
 
+use backend::{
+    environment::{ENVIRONMENT, Environment},
+    handlers::*,
+    unifi_api::{UNIFI_API, UnifiAPI},
+};
+
 #[tokio::main]
 async fn main() {
+    // =================================
     // Initialize tracing
+    // =================================
     tracing_subscriber::fmt()
         .with_env_filter(
             EnvFilter::builder()
@@ -24,6 +27,9 @@ async fn main() {
         )
         .init();
 
+    // =================================
+    // Setup environment variables manager
+    // =================================
     let env = match Environment::try_new() {
         Ok(env) => env,
         Err(e) => {
@@ -34,7 +40,11 @@ async fn main() {
     ENVIRONMENT
         .set(env)
         .expect("Failed to set environment variables");
+    let environment = ENVIRONMENT.get().expect("Environment not set");
 
+    // =================================
+    // Setup UniFi Controller API connection
+    // =================================
     loop {
         match UnifiAPI::try_new().await {
             Ok(api) => {
@@ -50,6 +60,9 @@ async fn main() {
         }
     }
 
+    // =================================
+    // Setup Axum server
+    // =================================
     let cors = CorsLayer::new()
         .allow_headers([http::header::CONTENT_TYPE])
         .allow_methods([Method::POST, Method::GET, Method::DELETE])
@@ -74,13 +87,18 @@ async fn main() {
         .route("/api/vouchers/selected", delete(delete_selected_handler))
         .layer(cors);
 
-    let environment = ENVIRONMENT.get().expect("Environment not set");
     let bind_address = format!(
         "{}:{}",
         environment.backend_bind_host, environment.backend_bind_port
     );
-    let listener = tokio::net::TcpListener::bind(&bind_address).await.unwrap();
+
+    let listener = tokio::net::TcpListener::bind(&bind_address)
+        .await
+        .expect("Could not bind listener");
+
     info!("Server running on http://{}", bind_address);
 
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app)
+        .await
+        .expect("Axum server should never error");
 }

@@ -1,10 +1,11 @@
-use crate::{models::*, unifi_api::*};
 use axum::{
     extract::Query,
     http::{HeaderMap, StatusCode},
     response::Json,
 };
 use tracing::{debug, error, info};
+
+use crate::{models::*, unifi_api::UNIFI_API};
 
 pub async fn get_vouchers_handler() -> Result<Json<GetVouchersResponse>, StatusCode> {
     debug!("Received request to get vouchers");
