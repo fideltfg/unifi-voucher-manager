@@ -10,6 +10,7 @@ use tracing_subscriber::EnvFilter;
 use backend::{
     environment::{ENVIRONMENT, Environment},
     handlers::*,
+    tasks::run_daily_purge,
     unifi_api::{UNIFI_API, UnifiAPI},
 };
 
@@ -59,6 +60,11 @@ async fn main() {
             }
         }
     }
+
+    // =================================
+    // Start scheduled tasks
+    // =================================
+    tokio::spawn(run_daily_purge(environment.timezone));
 
     // =================================
     // Setup Axum server
