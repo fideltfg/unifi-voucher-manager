@@ -3,7 +3,7 @@
 [![Docker Image Version (latest by date)](https://img.shields.io/docker/v/etiennecollin/unifi-voucher-manager?sort=semver&label=Version&logo=docker&color=blue) ![Docker Pulls](https://img.shields.io/docker/pulls/etiennecollin/unifi-voucher-manager?label=Pulls&logo=docker&color=blue)](https://hub.docker.com/r/etiennecollin/unifi-voucher-manager)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/etiennecollin/unifi-voucher-manager/release_docker.yaml?label=Docker%20Build&logo=github) ![GitHub License](https://img.shields.io/github/license/etiennecollin/unifi-voucher-manager?label=License&logo=github&color=red)](https://github.com/etiennecollin/unifi-voucher-manager)
 
-A modern, touch-friendly web application for managing WiFi vouchers on UniFi controllers.
+UVM is a modern, touch-friendly web application for managing WiFi vouchers on UniFi controllers.
 Perfect for businesses, cafes, hotels, and home networks that need to provide guest WiFi access.
 
 ![WiFi Voucher Manager](./assets/view.png)
@@ -20,6 +20,9 @@ Perfect for businesses, cafes, hotels, and home networks that need to provide gu
 - [⚙️ Configuration](#-configuration)
   - [Environment Variables](#environment-variables)
   - [Getting UniFi API Credentials](#getting-unifi-api-credentials)
+  - [Rolling Vouchers and Kiosk Page](#rolling-vouchers-and-kiosk-page)
+    - [How Rolling Vouchers Work](#how-rolling-vouchers-work)
+    - [Kiosk Display](#kiosk-display)
 - [🐛 Troubleshooting](#-troubleshooting)
   - [Common Issues](#common-issues)
   - [Getting Help](#getting-help)
@@ -37,11 +40,13 @@ Perfect for businesses, cafes, hotels, and home networks that need to provide gu
   - Guest count limits
   - Data usage limits
   - Upload/download speed limits
-- **View All Vouchers** - Browse and search existing vouchers by name
-- **Search Vouchers** - Search vouchers by name
-- **Bulk Operations** - Select and delete multiple vouchers
+- **Browse Vouchers** - Browse and search existing vouchers by name
+- **Bulk Operations** - Select and delete multiple vouchers at once
+- **Print Vouchers** - Print vouchers in either list or grid format; thermal printers friendly
 - **Auto-cleanup** - Remove expired vouchers with a single click
 - **QR Code** - Easily connect guests to your network
+- **Rolling Vouchers** - Automatically generate a voucher for the next guest when the current one gets used
+- **Kiosk Page** - A nice page to display your QR code and current rolling voucher
 
 ### 🎨 Modern Interface
 
@@ -141,6 +146,37 @@ To configure the WiFi QR code, you are required to configure the `WIFI_SSID` and
 3. **Create a new API key** by giving it a name and an expiration.
 4. **Find your Site ID** in the controller URL or on [unifi.ui.com](https://unifi.ui.com)
 
+### Rolling Vouchers and Kiosk Page
+
+Rolling vouchers provide a seamless way to automatically generate guest network access codes. When one voucher is used, a new one is automatically created for the next guest.
+
+> [!IMPORTANT]
+> **UniFi Controller Setup Required**
+>
+> For rolling vouchers to work properly, you **must** configure your UniFi Hotspot:
+>
+> 1. Go to your UniFi Controller -> Insights -> Hotspot
+> 2. Set the **Success Landing Page** to: `https://your-uvm-domain.com/welcome`, the `/welcome` page of UVM
+>
+> Without this configuration, vouchers **will not** automatically roll when guests connect.
+
+#### How Rolling Vouchers Work
+
+1. **Initial Setup**: Rolling vouchers are generated automatically when needed
+2. **Guest Connection**: When a guest connects to your network, they're redirected to the `/welcome` page
+3. **Automatic Rolling**: The welcome page triggers the creation of a new voucher for the next guest
+   - Rolling vouchers are created with special naming conventions to distinguish them from manually created vouchers, making them easy to identify in your voucher management interface.
+4. **IP-Based Uniqueness**: Each IP address can only generate one voucher per session (prevents abuse from page reloads)
+5. **Daily Maintenance**: To prevent clutter, expired rolling vouchers are automatically deleted at midnight (based on your configured `TIMEZONE` in [Environment Variables](#environment-variables))
+
+#### Kiosk Display
+
+The kiosk page (`/kiosk`) provides a guest-friendly interface displaying:
+
+- **QR Code**: For easy network connection (if configured in [Environment Variables](#environment-variables))
+- **Current Voucher**: The active rolling voucher code
+- **Real-time Updates**: Automatically refreshes when vouchers change
+
 ## 🐛 Troubleshooting
 
 ### Common Issues
@@ -156,7 +192,7 @@ To configure the WiFi QR code, you are required to configure the `WIFI_SSID` and
   - Check all environment variables are set
   - Verify Docker container has network access to UniFi controller
   - Check logs: `docker logs unifi-voucher-manager`
-- **The WiFi QR code button is seems disabled**
+- **The WiFi QR code button is disabled**
   - Check the [Environment Variables](#environment-variables) section and make sure you configured the variables required for the WiFi QR code.
   - Check the browser console for variable configuration errors (generally by hitting `F12` and going to the 'console' tab).
 
