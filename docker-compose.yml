@@ -1,4 +1,5 @@
----
+version: '3.8'
+
 services:
   unifi-voucher-manager:
     image: "docker.io/etiennecollin/unifi-voucher-manager:latest"
@@ -14,15 +15,15 @@ services:
     container_name: "unifi-voucher-manager"
     restart: "unless-stopped"
     ports:
-      - "3012:3000"
+      - "3011:3000"
 
     # SEE README FOR ENVIRONMENT VARIABLES DOCUMENTATION
     environment:
-      UNIFI_CONTROLLER_URL: "https://192.168.1.7:8443" # URL of your UniFi controller
+      UNIFI_CONTROLLER_URL: "http://192.168.1.7:8443" # URL of your UniFi controller
       UNIFI_USERNAME: "networkdungion" # Username for your UniFi controller
       UNIFI_PASSWORD: "TheTimeHasCome!123" # Password for your UniFi controller
       UNIFI_HAS_VALID_CERT: "false" # Set to false only if your UniFi controller does not use a valid SSL certificate. Typically, this should remain true when accessing the controller (UNIFI_CONTROLLER_URL) through a reverse proxy or any setup providing trusted SSL certificates (e.g., Let's Encrypt).
-      WIFI_SSID: "" # Optional, but recommended
-      WIFI_PASSWORD: "" # Optional, but recommended
-      GUEST_SUBNETWORK: "Y" # Optional, but recommended
-      TIMEZONE: "Your timezone (America/Edmonton)" # Optional, but recommended
+      WIFI_SSID: "Your guest WiFi SSID" # Optional, but recommended
+      WIFI_PASSWORD: "Your guest WiFi password" # Optional, but recommended
+      GUEST_SUBNETWORK: "Your guest subnetwork in IPv4 CIDR notation (X.X.X.X/X)" # Optional, but recommended
+      TIMEZONE: "America/Toronto" # Optional, but recommended

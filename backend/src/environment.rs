@@ -14,7 +14,8 @@ pub static ENVIRONMENT: OnceLock<Environment> = OnceLock::new();
 pub struct Environment {
     pub unifi_controller_url: String,
     pub unifi_site_id: String,
-    pub unifi_api_key: String,
+    pub unifi_username: String,
+    pub unifi_password: String,
     pub backend_bind_host: String,
     pub backend_bind_port: u16,
     pub rolling_voucher_duration_minutes: u64,
@@ -36,8 +37,10 @@ impl Environment {
             return Err("UNIFI_CONTROLLER_URL must start with http:// or https://".to_string());
         }
 
-        let unifi_api_key: String =
-            env::var("UNIFI_API_KEY").map_err(|e| format!("UNIFI_API_KEY: {e}"))?;
+        let unifi_username: String =
+            env::var("UNIFI_USERNAME").map_err(|e| format!("UNIFI_USERNAME: {e}"))?;
+        let unifi_password: String =
+            env::var("UNIFI_PASSWORD").map_err(|e| format!("UNIFI_PASSWORD: {e}"))?;
         let unifi_site_id: String =
             env::var("UNIFI_SITE_ID").unwrap_or(DEFAULT_UNIFI_SITE_ID.to_owned());
 
@@ -84,7 +87,8 @@ impl Environment {
         Ok(Self {
             unifi_controller_url,
             unifi_site_id,
-            unifi_api_key,
+            unifi_username,
+            unifi_password,
             backend_bind_host,
             backend_bind_port,
             rolling_voucher_duration_minutes,

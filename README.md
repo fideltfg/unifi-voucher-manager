@@ -121,12 +121,19 @@ The kiosk page (`/kiosk`) provides a guest-friendly interface displaying:
 
 ## ⚙️ Configuration
 
-### Getting UniFi API Credentials
+### Getting UniFi Controller Credentials
 
 1. **Access your UniFi Controller**
-2. **Navigate to Settings -> Control Plane -> Integration**
-3. **Create a new API key** by giving it a name and an expiration.
-4. **Find your Site ID** in the controller URL or on [unifi.ui.com](https://unifi.ui.com)
+2. **Create or use an existing administrator account**
+   - You can use the main admin account or create a dedicated account for the voucher manager
+   - The account needs permissions to manage hotspot vouchers
+3. **Note your credentials**
+   - Username (typically your email or local username)
+   - Password
+4. **Find your Site ID** (optional)
+   - Usually "default" for most installations
+   - Can be found in the controller URL when viewing a specific site
+   - Format: `https://your-controller/manage/site/SITE_ID/dashboard`
 
 ### Rolling Vouchers and Kiosk Page
 
@@ -171,9 +178,12 @@ Make sure to configure the required variables. The optional variables generally 
 - **`UNIFI_CONTROLLER_URL`: `string`** (_Required_)
   - **Description**: URL to your UniFi controller with protocol (`http://` or `https://`).
   - **Example**: `https://unifi.example.com` or `https://192.168.8.1:443`
-- **`UNIFI_API_KEY`: `string`** (_Required_)
-  - **Description**: API Key for your UniFi controller.
-  - **Example**: `abc123...`
+- **`UNIFI_USERNAME`: `string`** (_Required_)
+  - **Description**: Username for your UniFi controller (administrator account).
+  - **Example**: `admin@example.com` or `admin`
+- **`UNIFI_PASSWORD`: `string`** (_Required_)
+  - **Description**: Password for your UniFi controller account.
+  - **Example**: `your-secure-password`
 
 > [!WARNING]
 > Improperly setting the `UNIFI_HAS_VALID_CERT` variable **will** prevent UVM from communicating with the UniFi controller.

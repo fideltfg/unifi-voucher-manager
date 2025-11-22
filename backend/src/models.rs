@@ -4,28 +4,215 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Voucher {
+    #[serde(rename = "_id")]
     pub id: String,
-    #[serde(rename = "createdAt")]
+    #[serde(rename = "create_time", deserialize_with = "deserialize_timestamp")]
     pub created_at: String,
+    #[serde(rename = "note", default)]
     pub name: String,
     pub code: String,
-    #[serde(rename = "authorizedGuestLimit")]
+    #[serde(rename = "quota", default, deserialize_with = "deserialize_optional_u64")]
     pub authorized_guest_limit: Option<u64>,
-    #[serde(rename = "authorizedGuestCount")]
+    #[serde(rename = "used", default)]
     pub authorized_guest_count: u64,
-    #[serde(rename = "activatedAt")]
+    #[serde(rename = "start_time", default, deserialize_with = "deserialize_optional_timestamp")]
     pub activated_at: Option<String>,
-    #[serde(rename = "expiresAt")]
+    #[serde(rename = "end_time", default, deserialize_with = "deserialize_optional_timestamp")]
     pub expires_at: Option<String>,
+    #[serde(default)]
     pub expired: bool,
-    #[serde(rename = "timeLimitMinutes")]
+    #[serde(rename = "duration", default)]
     pub time_limit_minutes: u64,
-    #[serde(rename = "dataUsageLimitMBytes")]
+    #[serde(rename = "qos_overwrite", default, deserialize_with = "deserialize_optional_u64")]
     pub data_usage_limit_mbytes: Option<u64>,
-    #[serde(rename = "rxRateLimitKbps")]
+    #[serde(rename = "qos_rate_max_up", default, deserialize_with = "deserialize_optional_u64")]
     pub rx_rate_limit_kbps: Option<u64>,
-    #[serde(rename = "txRateLimitKbps")]
+    #[serde(rename = "qos_rate_max_down", default, deserialize_with = "deserialize_optional_u64")]
     pub tx_rate_limit_kbps: Option<u64>,
+}
+
+// Custom deserializer for timestamps that can be either integers or strings
+fn deserialize_timestamp<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::{self, Visitor};
+    use std::fmt;
+
+    struct TimestampVisitor;
+
+    impl<'de> Visitor<'de> for TimestampVisitor {
+        type Value = String;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("an integer or string timestamp")
+        }
+
+        fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(value.to_string())
+        }
+
+        fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(value.to_string())
+        }
+
+        fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(value.to_string())
+        }
+
+        fn visit_string<E>(self, value: String) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(value)
+        }
+    }
+
+    deserializer.deserialize_any(TimestampVisitor)
+}
+
+// Custom deserializer for optional timestamps
+fn deserialize_optional_timestamp<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::{self, Visitor};
+    use std::fmt;
+
+    struct OptionalTimestampVisitor;
+
+    impl<'de> Visitor<'de> for OptionalTimestampVisitor {
+        type Value = Option<String>;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("an optional integer or string timestamp")
+        }
+
+        fn visit_none<E>(self) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(None)
+        }
+
+        fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            deserialize_timestamp(deserializer).map(Some)
+        }
+
+        fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(Some(value.to_string()))
+        }
+
+        fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(Some(value.to_string()))
+        }
+
+        fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(Some(value.to_string()))
+        }
+
+        fn visit_string<E>(self, value: String) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(Some(value))
+        }
+    }
+
+    deserializer.deserialize_option(OptionalTimestampVisitor)
+}
+
+// Custom deserializer for optional u64 that can handle booleans, integers, or missing values
+fn deserialize_optional_u64<'de, D>(deserializer: D) -> Result<Option<u64>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::{self, Visitor};
+    use std::fmt;
+
+    struct OptionalU64Visitor;
+
+    impl<'de> Visitor<'de> for OptionalU64Visitor {
+        type Value = Option<u64>;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("an optional integer, boolean, or null")
+        }
+
+        fn visit_none<E>(self) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(None)
+        }
+
+        fn visit_unit<E>(self) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(None)
+        }
+
+        fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            deserializer.deserialize_any(OptionalU64Visitor)
+        }
+
+        fn visit_bool<E>(self, value: bool) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            // Convert boolean to Option: true -> Some(0), false -> None
+            if value {
+                Ok(Some(0))
+            } else {
+                Ok(None)
+            }
+        }
+
+        fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            if value >= 0 {
+                Ok(Some(value as u64))
+            } else {
+                Ok(None)
+            }
+        }
+
+        fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(Some(value))
+        }
+    }
+
+    deserializer.deserialize_option(OptionalU64Visitor)
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -45,8 +232,18 @@ pub struct CreateVoucherRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct CreateVoucherApiResponse {
+    pub meta: serde_json::Value,
+    pub data: Vec<CreateVoucherData>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateVoucherData {
+    pub create_time: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CreateVoucherResponse {
-    #[serde(alias = "data")]
     pub vouchers: Vec<Voucher>,
 }
 
