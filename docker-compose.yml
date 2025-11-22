@@ -18,12 +18,17 @@ services:
       - "3011:3000"
 
     # SEE README FOR ENVIRONMENT VARIABLES DOCUMENTATION
+    env_file:
+      - .env
     environment:
-      UNIFI_CONTROLLER_URL: "http://192.168.1.7:8443" # URL of your UniFi controller
-      UNIFI_USERNAME: "networkdungion" # Username for your UniFi controller
-      UNIFI_PASSWORD: "" # Password for your UniFi controller
-      UNIFI_HAS_VALID_CERT: "false" # Set to false only if your UniFi controller does not use a valid SSL certificate. Typically, this should remain true when accessing the controller (UNIFI_CONTROLLER_URL) through a reverse proxy or any setup providing trusted SSL certificates (e.g., Let's Encrypt).
-      WIFI_SSID: "Your guest WiFi SSID" # Optional, but recommended
-      WIFI_PASSWORD: "Your guest WiFi password" # Optional, but recommended
-      GUEST_SUBNETWORK: "Your guest subnetwork in IPv4 CIDR notation (X.X.X.X/X)" # Optional, but recommended
-      TIMEZONE: "America/Toronto" # Optional, but recommended
+      UNIFI_CONTROLLER_URL: ${UNIFI_CONTROLLER_URL}
+      UNIFI_USERNAME: ${UNIFI_USERNAME}
+      UNIFI_PASSWORD: ${UNIFI_PASSWORD}
+      UNIFI_HAS_VALID_CERT: ${UNIFI_HAS_VALID_CERT:-false}
+      UNIFI_SITE_ID: ${UNIFI_SITE_ID:-default}
+      WIFI_SSID: ${WIFI_SSID:-}
+      WIFI_PASSWORD: ${WIFI_PASSWORD:-}
+      GUEST_SUBNETWORK: ${GUEST_SUBNETWORK:-Y}
+      TIMEZONE: ${TIMEZONE:-UTC}
+      ROLLING_VOUCHER_ENABLED: ${ROLLING_VOUCHER_ENABLED:-false}
+      ROLLING_VOUCHER_DURATION_MINUTES: ${ROLLING_VOUCHER_DURATION_MINUTES:-1440}

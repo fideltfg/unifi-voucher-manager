@@ -75,11 +75,16 @@ The kiosk page (`/kiosk`) provides a guest-friendly interface displaying:
 
 1. **Create the configuration files**
    ```bash
-   # Download the compose file
+   # Download the compose file and example .env
    curl -o compose.yaml https://raw.githubusercontent.com/etiennecollin/unifi-voucher-manager/main/compose.yaml
+   curl -o .env.example https://raw.githubusercontent.com/etiennecollin/unifi-voucher-manager/main/.env.example
+   
+   # Copy the example and edit with your settings
+   cp .env.example .env
+   nano .env  # or use your preferred editor
    ```
 2. **Configure your environment**
-   - Set the required environment variables (see [Environment Variables](#environment-variables)) in the `compose.yaml` file.
+   - Edit the `.env` file with your UniFi controller details and preferences (see [Environment Variables](#environment-variables)).
 3. **Start the application**
    ```bash
    docker compose up -d --force-recreate
