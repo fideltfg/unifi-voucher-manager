@@ -145,7 +145,7 @@ function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printCon
           {printConfig.additionalInfo.fields.map((field, index) => (
             <div key={index} className="print-tos-item">
               <div className="print-tos-label">{field.label}</div>
-              <div className="print-tos-value">{field.value}</div>
+              <div className="print-tos-value" style={{ whiteSpace: 'pre-line' }}>{field.value}</div>
             </div>
           ))}
         </div>
