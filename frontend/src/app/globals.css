@@ -12,71 +12,71 @@
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     "Courier New", monospace;
 
-  /* Primary Brand Colors */
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  /* UniFi Brand Colors - Blue */
+  --color-primary-50: #e6f4ff;
+  --color-primary-100: #b3dfff;
+  --color-primary-200: #80caff;
+  --color-primary-300: #4db5ff;
+  --color-primary-400: #1aa0ff;
+  --color-primary-500: #0091ff;
+  --color-primary-600: #007de6;
+  --color-primary-700: #0069cc;
+  --color-primary-800: #0055b3;
+  --color-primary-900: #004199;
 
-  /* Secondary Colors */
-  --color-secondary-50: #f0f9ff;
-  --color-secondary-100: #e0f2fe;
-  --color-secondary-200: #bae6fd;
-  --color-secondary-300: #7dd3fc;
-  --color-secondary-400: #38bdf8;
-  --color-secondary-500: #0ea5e9;
-  --color-secondary-600: #0284c7;
-  --color-secondary-700: #0369a1;
-  --color-secondary-800: #075985;
-  --color-secondary-900: #0c4a6e;
+  /* Secondary/Neutral Colors */
+  --color-secondary-50: #f8f9fa;
+  --color-secondary-100: #e9ecef;
+  --color-secondary-200: #dee2e6;
+  --color-secondary-300: #ced4da;
+  --color-secondary-400: #adb5bd;
+  --color-secondary-500: #6c757d;
+  --color-secondary-600: #495057;
+  --color-secondary-700: #343a40;
+  --color-secondary-800: #212529;
+  --color-secondary-900: #1a1d26;
 
-  /* Success Colors */
-  --color-success-50: #f0fdf4;
-  --color-success-100: #dcfce7;
-  --color-success-200: #bbf7d0;
-  --color-success-300: #86efac;
-  --color-success-400: #4ade80;
-  --color-success-500: #22c55e;
-  --color-success-600: #16a34a;
-  --color-success-700: #15803d;
-  --color-success-800: #166534;
-  --color-success-900: #14532d;
+  /* Success Colors - UniFi Green */
+  --color-success-50: #e6fff4;
+  --color-success-100: #b3ffe0;
+  --color-success-200: #80ffcc;
+  --color-success-300: #4dffb8;
+  --color-success-400: #1affa4;
+  --color-success-500: #00e68a;
+  --color-success-600: #00d27f;
+  --color-success-700: #00b36f;
+  --color-success-800: #00995f;
+  --color-success-900: #008050;
 
   /* Danger Colors */
-  --color-danger-50: #fef2f2;
-  --color-danger-100: #fee2e2;
-  --color-danger-200: #fecaca;
-  --color-danger-300: #fca5a5;
-  --color-danger-400: #f87171;
-  --color-danger-500: #ef4444;
-  --color-danger-600: #dc2626;
-  --color-danger-700: #b91c1c;
-  --color-danger-800: #991b1b;
-  --color-danger-900: #7f1d1d;
+  --color-danger-50: #fff0f0;
+  --color-danger-100: #ffd6d6;
+  --color-danger-200: #ffb3b3;
+  --color-danger-300: #ff9090;
+  --color-danger-400: #ff6d6d;
+  --color-danger-500: #ff4a4a;
+  --color-danger-600: #e63939;
+  --color-danger-700: #cc2929;
+  --color-danger-800: #b31919;
+  --color-danger-900: #990909;
 
   /* Warning Colors */
-  --color-warning-50: #fffbeb;
-  --color-warning-100: #fef3c7;
-  --color-warning-200: #fde68a;
-  --color-warning-300: #fcd34d;
-  --color-warning-400: #fbbf24;
-  --color-warning-500: #f59e0b;
-  --color-warning-600: #d97706;
-  --color-warning-700: #b45309;
-  --color-warning-800: #92400e;
-  --color-warning-900: #78350f;
+  --color-warning-50: #fff8e6;
+  --color-warning-100: #ffecb3;
+  --color-warning-200: #ffe080;
+  --color-warning-300: #ffd44d;
+  --color-warning-400: #ffc81a;
+  --color-warning-500: #ffbb00;
+  --color-warning-600: #e6a800;
+  --color-warning-700: #cc9500;
+  --color-warning-800: #b38200;
+  --color-warning-900: #996f00;
 
-  /* Custom Box Shadows */
-  --shadow-soft: 0 2px 10px rgba(0, 0, 0, 0.1);
-  --shadow-soft-dark: 0 2px 10px rgba(0, 0, 0, 0.3);
-  --shadow-elevation: 0 4px 20px rgba(0, 0, 0, 0.15);
-  --shadow-elevation-dark: 0 4px 20px rgba(0, 0, 0, 0.4);
+  /* Custom Box Shadows - Subtle like UniFi */
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-soft-dark: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-elevation: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-elevation-dark: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 /* ========================================================================== */
@@ -89,13 +89,13 @@
 
 /* Text */
 @utility text-primary {
-  @apply text-neutral-900 dark:text-neutral-50;
+  @apply text-neutral-900 dark:text-[#e1e3e9];
 }
 @utility text-secondary {
-  @apply text-neutral-600 dark:text-neutral-400;
+  @apply text-neutral-600 dark:text-[#9ca3af];
 }
 @utility text-muted {
-  @apply text-neutral-500 dark:text-neutral-500;
+  @apply text-neutral-500 dark:text-[#6b7280];
 }
 @utility text-brand {
   @apply text-primary-600 dark:text-primary-400;
@@ -106,43 +106,43 @@
 
 /* Background */
 @utility bg-page {
-  @apply bg-neutral-50 dark:bg-neutral-900;
+  @apply bg-[#f5f5f5] dark:bg-[#191b1e];
 }
 @utility bg-surface {
-  @apply bg-white dark:bg-neutral-800;
+  @apply bg-white dark:bg-[#1f2226];
 }
 @utility bg-overlay {
   @apply bg-black/50 dark:bg-black/70;
 }
 @utility bg-disabled {
-  @apply bg-neutral-400 dark:bg-neutral-600;
+  @apply bg-neutral-300 dark:bg-neutral-700;
 }
 
 @utility bg-interactive {
-  @apply bg-neutral-50 dark:bg-neutral-700;
+  @apply bg-neutral-50 dark:bg-[#26292d];
 }
 @utility bg-interactive-hover {
-  @apply hover:bg-neutral-100 dark:hover:bg-neutral-600;
+  @apply hover:bg-neutral-100 dark:hover:bg-[#2d3035];
 }
 @utility interactive-disabled {
-  @apply disabled:opacity-50 disabled:bg-disabled disabled:hover:bg-disabled disabled:text-primary disabled:border-default disabled:cursor-default;
+  @apply disabled:opacity-40 disabled:bg-disabled disabled:hover:bg-disabled disabled:text-primary disabled:border-default disabled:cursor-not-allowed;
 }
 
 /* Borders */
 @utility border-default {
-  @apply border-neutral-200 dark:border-neutral-700;
+  @apply border-neutral-200 dark:border-[#2d3036];
 }
 @utility border-subtle {
-  @apply border-neutral-100 dark:border-neutral-800;
+  @apply border-neutral-100 dark:border-[#26292d];
 }
 @utility border-intense {
-  @apply border-neutral-400 dark:border-neutral-500;
+  @apply border-neutral-300 dark:border-[#3a3d42];
 }
 @utility border-accent {
   @apply border-primary-500 dark:border-primary-500;
 }
 @utility border-emphasis {
-  @apply border-primary-600 dark:border-primary-300;
+  @apply border-primary-600 dark:border-primary-400;
 }
 
 /* Focus */
@@ -358,10 +358,10 @@
   }
 
   .card {
-    @apply bg-surface border border-default rounded-xl shadow-soft dark:shadow-soft-dark p-4 border-1 w-full;
+    @apply bg-surface border border-default rounded-lg shadow-soft dark:shadow-soft-dark p-4 w-full;
   }
   .card-interactive {
-    @apply cursor-pointer focus-accent hover-lift;
+    @apply cursor-pointer focus-accent hover:border-intense;
   }
 
   .voucher-code {
@@ -369,10 +369,10 @@
   }
 
   .tab-active {
-    @apply text-brand font-semibold border-b-3 border-accent;
+    @apply text-brand font-semibold border-b-2 border-accent;
   }
   .tab-inactive {
-    @apply text-secondary bg-interactive-hover border-b-3 border-transparent hover:border-intense;
+    @apply text-secondary bg-interactive-hover border-b-2 border-transparent hover:border-intense hover:text-primary;
   }
   .sticky-tabs {
     top: var(--header-height);

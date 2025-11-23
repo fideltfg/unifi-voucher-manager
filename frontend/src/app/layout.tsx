@@ -33,7 +33,7 @@ export default function RootLayout({
                 }
                 const theme = getTheme();
                 document.documentElement.classList.toggle('dark', theme === 'dark');
-                document.documentElement.style.backgroundColor = theme === 'dark' ? '#171717' : '#fafafa';
+                document.documentElement.style.backgroundColor = theme === 'dark' ? '#191b1e' : '#f5f5f5';
               })();
             `,
           }}
