@@ -2,8 +2,8 @@
   "logo": {
     "enabled": true,
     "path": "/logo.png",
-    "width": 180,
-    "height": 60
+    "width": 240,
+    "height": 80
   },
   "header": {
     "title": "WiFi Access Voucher",
@@ -13,6 +13,9 @@
     "customText": "",
     "showVoucherId": true,
     "showPrintedTime": true
+  },
+  "qrCode": {
+    "size": 240
   },
   "additionalInfo": {
     "enabled": true,

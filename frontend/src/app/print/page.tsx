@@ -33,6 +33,9 @@ interface PrintConfig {
     showVoucherId: boolean;
     showPrintedTime: boolean;
   };
+  qrCode: {
+    size: number;
+  };
   additionalInfo: {
     enabled: boolean;
     fields: Array<{
@@ -118,7 +121,7 @@ function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printCon
               <div className="font-bold mb-2">Scan to Connect</div>
               <QRCodeSVG
                 value={wifiString}
-                size={140}
+                size={printConfig?.qrCode?.size || 180}
                 level="H"
                 marginSize={4}
                 title="Wi-Fi Access QR Code"

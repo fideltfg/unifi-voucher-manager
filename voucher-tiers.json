@@ -18,7 +18,7 @@
     },
     {
       "id": "premium",
-      "name": "Premium",
+      "name": "24 Hour Premium",
       "description": "Unlimited Wifi Access for 24 Hours",
       "durationHours": 24,
       "downloadMbps": null,
@@ -27,7 +27,7 @@
     },
     {
       "id": "standard",
-      "name": "Standard",
+      "name": "24 Hour Standard",
       "description": "10/5 Mbps, 5GB (24h)",
       "durationHours": 24,
       "downloadMbps": 10,
@@ -35,17 +35,8 @@
       "dataLimitMB": 5000
     },
     {
-      "id": "basic",
-      "name": "Basic",
-      "description": "5/2 Mbps, 1GB (4h)",
-      "durationHours": 4,
-      "downloadMbps": 5,
-      "uploadMbps": 2,
-      "dataLimitMB": 1000
-    },
-    {
       "id": "guest",
-      "name": "Guest",
+      "name": "1 Hour Free Guest",
       "description": "Free limited access (2/1 Mbps, 500MB (1h)",
       "durationHours": 1,
       "downloadMbps": 2,
