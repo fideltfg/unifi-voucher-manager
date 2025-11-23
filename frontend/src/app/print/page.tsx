@@ -17,8 +17,33 @@ import Spinner from "@/components/utils/Spinner";
 
 export type PrintMode = "list" | "grid";
 
+interface PrintConfig {
+  logo: {
+    enabled: boolean;
+    path: string;
+    width: number;
+    height: number;
+  };
+  header: {
+    title: string;
+    subtitle: string;
+  };
+  footer: {
+    customText: string;
+    showVoucherId: boolean;
+    showPrintedTime: boolean;
+  };
+  additionalInfo: {
+    enabled: boolean;
+    fields: Array<{
+      label: string;
+      value: string;
+    }>;
+  };
+}
+
 // This component represents a single voucher card to be printed
-function VoucherPrintCard({ voucher }: { voucher: Voucher }) {
+function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printConfig: PrintConfig | null }) {
   const { wifiConfig, wifiString } = useGlobal();
 
   const fields = [
@@ -48,8 +73,33 @@ function VoucherPrintCard({ voucher }: { voucher: Voucher }) {
 
   return (
     <div className="print-voucher">
+      {printConfig?.logo.enabled && printConfig.logo.path && (
+        <div className="print-logo">
+          <img 
+            src={printConfig.logo.path} 
+            alt="Logo" 
+            width={printConfig.logo.width}
+            height={printConfig.logo.height}
+            style={{ 
+              width: `${printConfig.logo.width}px`, 
+              height: `${printConfig.logo.height}px`,
+              objectFit: 'contain',
+              display: 'block',
+              margin: '0 auto'
+            }}
+            onError={(e) => {
+              console.error('Logo failed to load:', printConfig.logo.path);
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </div>
+      )}
+      
       <div className="print-header">
-        <div className="print-title">WiFi Access Voucher</div>
+        <div className="print-title">{printConfig?.header.title || "WiFi Access Voucher"}</div>
+        {printConfig?.header.subtitle && (
+          <div className="print-subtitle">{printConfig.header.subtitle}</div>
+        )}
       </div>
 
       <div className="print-voucher-code">{formatCode(voucher.code)}</div>
@@ -90,14 +140,32 @@ function VoucherPrintCard({ voucher }: { voucher: Voucher }) {
         </div>
       )}
 
+      {printConfig?.additionalInfo.enabled && printConfig.additionalInfo.fields.length > 0 && (
+        <div className="print-additional-info">
+          {printConfig.additionalInfo.fields.map((field, index) => (
+            <div key={index} className="print-tos-item">
+              <div className="print-tos-label">{field.label}</div>
+              <div className="print-tos-value">{field.value}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="print-footer">
-        <div>
-          <strong className="text-sm">ID:</strong> {voucher.id}
-        </div>
-        <div>
-          <strong className="text-sm">Printed:</strong>{" "}
-          {new Date().toUTCString()}
-        </div>
+        {printConfig?.footer.customText && (
+          <div className="print-custom-text">{printConfig.footer.customText}</div>
+        )}
+        {printConfig?.footer.showVoucherId && (
+          <div>
+            <strong className="text-sm">ID:</strong> {voucher.id}
+          </div>
+        )}
+        {printConfig?.footer.showPrintedTime && (
+          <div>
+            <strong className="text-sm">Printed:</strong>{" "}
+            {new Date().toUTCString()}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -109,7 +177,16 @@ function Vouchers() {
   const searchParams = useSearchParams();
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [mode, setMode] = useState<PrintMode>("list");
+  const [printConfig, setPrintConfig] = useState<PrintConfig | null>(null);
   const lastSearchParams = useRef<string | null>(null);
+
+  // Load print configuration
+  useEffect(() => {
+    fetch('/print-config.json')
+      .then(res => res.json())
+      .then(config => setPrintConfig(config))
+      .catch(err => console.error('Failed to load print config:', err));
+  }, []);
 
   useEffect(() => {
     const paramString = searchParams.toString();
@@ -146,7 +223,7 @@ function Vouchers() {
   ) : (
     <div className={mode === "grid" ? "print-grid" : "print-list"}>
       {vouchers.map((v) => (
-        <VoucherPrintCard key={v.id} voucher={v} />
+        <VoucherPrintCard key={v.id} voucher={v} printConfig={printConfig} />
       ))}
     </div>
   );

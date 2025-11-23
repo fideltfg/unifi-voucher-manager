@@ -1,10 +1,10 @@
 {
   "rollingVoucher": {
     "enabled": false,
-    "durationHours": 24,
-    "downloadMbps": null,
-    "uploadMbps": null,
-    "dataLimitMB": null
+    "durationHours": 1,
+    "downloadMbps": 5,
+    "uploadMbps": 2,
+    "dataLimitMB": 1024
   },
   "tiers": [
     {

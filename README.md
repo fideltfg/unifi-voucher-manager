@@ -20,6 +20,8 @@ Perfect for businesses, cafes, hotels, and home networks that need to provide gu
   - [Without Docker](#without-docker)
 - [⚙️ Configuration](#-configuration)
   - [Getting UniFi API Credentials](#getting-unifi-api-credentials)
+  - [Voucher Tiers](#voucher-tiers)
+  - [Print Configuration](#print-configuration)
   - [Rolling Vouchers and Kiosk Page](#rolling-vouchers-and-kiosk-page)
     - [How Rolling Vouchers Work](#how-rolling-vouchers-work)
   - [Environment Variables](#environment-variables)
@@ -43,6 +45,9 @@ Perfect for businesses, cafes, hotels, and home networks that need to provide gu
 - **Browse Vouchers** - Browse and search existing vouchers by name
 - **Bulk Operations** - Select and delete multiple vouchers at once
 - **Print Vouchers** - Print vouchers in either list or grid format; thermal printers friendly
+  - Customizable print layout with logo support
+  - Configurable additional information fields
+  - Optimized for 80mm thermal printers (e.g., Epson TM-T88V)
 - **Auto-cleanup** - Remove expired vouchers with a single click
 - **QR Code** - Easily connect guests to your network
 - **Rolling Vouchers** - Automatically generate a voucher for the next guest when the current one gets used
@@ -139,6 +144,101 @@ The kiosk page (`/kiosk`) provides a guest-friendly interface displaying:
    - Usually "default" for most installations
    - Can be found in the controller URL when viewing a specific site
    - Format: `https://your-controller/manage/site/SITE_ID/dashboard`
+
+### Voucher Tiers
+
+The application supports predefined voucher tiers with preset durations and speed/data limits. These tiers are configured in the `voucher-tiers.json` file.
+
+**Example configuration:**
+```json
+{
+  "rollingVoucher": {
+    "enabled": true,
+    "durationHours": 24,
+    "downloadMbps": "unlimited",
+    "uploadMbps": "unlimited",
+    "dataLimitMB": "unlimited"
+  },
+  "tiers": [
+    {
+      "name": "1 Hour Basic",
+      "durationHours": 1,
+      "downloadMbps": 10,
+      "uploadMbps": 5,
+      "dataLimitMB": 500
+    },
+    {
+      "name": "1 Day Premium",
+      "durationHours": 24,
+      "downloadMbps": 100,
+      "uploadMbps": 50,
+      "dataLimitMB": "unlimited"
+    }
+  ]
+}
+```
+
+**Configuration options:**
+- `durationHours`: Duration in hours (converted to minutes internally)
+- `downloadMbps`: Download speed in Mbps (converted to Kbps internally), or `"unlimited"`
+- `uploadMbps`: Upload speed in Mbps (converted to Kbps internally), or `"unlimited"`
+- `dataLimitMB`: Data limit in megabytes, or `"unlimited"`
+
+### Print Configuration
+
+Customize printed vouchers for thermal printers using the `print-config.json` file.
+
+**Example configuration:**
+```json
+{
+  "logo": {
+    "enabled": true,
+    "path": "/logo.png",
+    "width": 180,
+    "height": 60
+  },
+  "header": {
+    "title": "WiFi Access Voucher",
+    "subtitle": "Welcome to Our Network"
+  },
+  "footer": {
+    "customText": "Thank you for visiting!",
+    "showVoucherId": true,
+    "showPrintedTime": true
+  },
+  "additionalInfo": {
+    "enabled": true,
+    "fields": [
+      {
+        "label": "Support",
+        "value": "support@example.com"
+      },
+      {
+        "label": "Location",
+        "value": "Building A, Floor 2"
+      }
+    ]
+  }
+}
+```
+
+**Configuration options:**
+- `logo.enabled`: Enable/disable logo display
+- `logo.path`: Path to logo file (relative to frontend public directory)
+- `logo.width/height`: Logo dimensions in pixels
+- `header.title`: Main title text
+- `header.subtitle`: Optional subtitle below title
+- `footer.customText`: Custom text in footer (e.g., business info, thank you message)
+- `footer.showVoucherId`: Show/hide voucher ID
+- `footer.showPrintedTime`: Show/hide print timestamp
+- `additionalInfo.enabled`: Enable/disable additional information section
+- `additionalInfo.fields`: Array of custom label/value pairs to display
+
+**To add a logo:**
+1. Place your logo image in the `frontend/public` directory (e.g., `logo.png`)
+2. Update the `logo.path` in `print-config.json` to `/logo.png`
+3. Adjust `logo.width` and `logo.height` as needed for your printer
+4. The configuration file is volume-mounted, so changes take effect immediately
 
 ### Rolling Vouchers and Kiosk Page
 

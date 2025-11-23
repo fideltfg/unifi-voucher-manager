@@ -18,6 +18,7 @@ services:
     
     volumes:
       - ./voucher-tiers.json:/app/frontend/public/voucher-tiers.json:ro
+      - ./print-config.json:/app/frontend/public/print-config.json:ro
 
     # SEE README FOR ENVIRONMENT VARIABLES DOCUMENTATION
     env_file:
@@ -33,4 +34,4 @@ services:
       GUEST_SUBNETWORK: ${GUEST_SUBNETWORK:-Y}
       TIMEZONE: ${TIMEZONE:-UTC}
       ROLLING_VOUCHER_ENABLED: ${ROLLING_VOUCHER_ENABLED:-false}
-      ROLLING_VOUCHER_DURATION_MINUTES: ${ROLLING_VOUCHER_DURATION_MINUTES:-1440}
+      # ROLLING_VOUCHER_DURATION_MINUTES: ${ROLLING_VOUCHER_DURATION_MINUTES:-1440}

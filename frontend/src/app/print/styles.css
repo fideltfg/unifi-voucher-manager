@@ -33,11 +33,18 @@
   @apply border-2 border-black p-3;
 }
 
+.print-logo {
+  @apply flex justify-center mb-2;
+}
+
 .print-header {
   @apply text-center border-b-2 border-black pb-1;
 }
 .print-title {
   @apply font-bold text-lg;
+}
+.print-subtitle {
+  @apply text-sm mt-0.5;
 }
 
 .print-voucher-code {
@@ -64,4 +71,24 @@
 /* Footer */
 .print-footer {
   @apply text-left border-t-2 border-black pt-2 text-xs;
+}
+
+.print-custom-text {
+  @apply mb-1 font-semibold;
+}
+
+.print-additional-info {
+  @apply my-2 border-t-2 border-black pt-2;
+}
+
+.print-tos-item {
+  @apply mb-2;
+}
+
+.print-tos-label {
+  @apply font-bold text-xs mb-1;
+}
+
+.print-tos-value {
+  @apply text-xs leading-tight;
 }
