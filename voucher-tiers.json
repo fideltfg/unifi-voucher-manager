@@ -11,10 +11,11 @@
       "id": "seasonal",
       "name": "Full Season Premium",
       "description": "Unlimited Wifi Access for the Entire Season",
-      "durationHours": 16666.65,
+      "durationHours": 4344,
       "downloadMbps": null,
       "uploadMbps": null,
-      "dataLimitMB": null
+      "dataLimitMB": null,
+      "price": 100.00
     },
     {
       "id": "premium",
@@ -23,16 +24,18 @@
       "durationHours": 24,
       "downloadMbps": null,
       "uploadMbps": null,
-      "dataLimitMB": null
+      "dataLimitMB": null,
+      "price": 10.00
     },
     {
       "id": "standard",
       "name": "24 Hour Standard",
       "description": "10/5 Mbps, 5GB (24h)",
       "durationHours": 24,
-      "downloadMbps": 10,
+      "downloadMbps": 11,
       "uploadMbps": 5,
-      "dataLimitMB": 5000
+      "dataLimitMB": 5120,
+      "price": 5.00
     },
     {
       "id": "guest",
@@ -41,7 +44,8 @@
       "durationHours": 1,
       "downloadMbps": 2,
       "uploadMbps": 1,
-      "dataLimitMB": 500
+      "dataLimitMB": 500,
+      "price": 0.00
     }
   ]
 }

@@ -3,19 +3,22 @@
     "enabled": true,
     "path": "/logo.png",
     "width": 240,
-    "height": 80
+    "height": 120
   },
   "header": {
     "title": "WiFi Access Voucher",
     "subtitle": ""
   },
   "footer": {
-    "customText": "",
+    "customText": "This is not a receipt or proof of purchase. Please keep your voucher for future reference.",
     "showVoucherId": true,
     "showPrintedTime": true
   },
   "qrCode": {
     "size": 240
+  },
+  "layout": {
+    "order": ["logo", "header", "code", "details", "qr", "additionalInfo", "footer"]
   },
   "additionalInfo": {
     "enabled": true,

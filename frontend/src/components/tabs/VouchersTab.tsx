@@ -21,7 +21,7 @@ export default function VouchersTab() {
   const [editMode, setEditMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("card");
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
   const router = useRouter();
 
   const filteredVouchers = useMemo(() => {

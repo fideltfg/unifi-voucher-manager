@@ -47,7 +47,7 @@ pub struct Voucher {
     pub time_limit_minutes: u64,
     #[serde(
         rename = "dataUsageLimitMBytes",
-        alias = "qos_overwrite",
+        alias = "qos_usage_quota",
         default,
         deserialize_with = "deserialize_optional_u64",
         skip_serializing_if = "Option::is_none"

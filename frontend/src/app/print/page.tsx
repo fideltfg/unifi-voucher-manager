@@ -36,6 +36,9 @@ interface PrintConfig {
   qrCode: {
     size: number;
   };
+  layout: {
+    order: string[];
+  };
   additionalInfo: {
     enabled: boolean;
     fields: Array<{
@@ -74,102 +77,130 @@ function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printCon
     },
   ];
 
-  return (
-    <div className="print-voucher">
-      {printConfig?.logo.enabled && printConfig.logo.path && (
-        <div className="print-logo">
-          <img 
-            src={printConfig.logo.path} 
-            alt="Logo" 
-            width={printConfig.logo.width}
-            height={printConfig.logo.height}
-            style={{ 
-              width: `${printConfig.logo.width}px`, 
-              height: `${printConfig.logo.height}px`,
-              objectFit: 'contain',
-              display: 'block',
-              margin: '0 auto'
-            }}
-            onError={(e) => {
-              console.error('Logo failed to load:', printConfig.logo.path);
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-        </div>
-      )}
-      
-      <div className="print-header">
-        <div className="print-title">{printConfig?.header.title || "WiFi Access Voucher"}</div>
-        {printConfig?.header.subtitle && (
-          <div className="print-subtitle">{printConfig.header.subtitle}</div>
-        )}
-      </div>
+  const renderSection = (section: string) => {
+    switch (section) {
+      case 'logo':
+        return printConfig?.logo.enabled && printConfig.logo.path ? (
+          <div key="logo" className="print-logo">
+            <img 
+              src={printConfig.logo.path} 
+              alt="Logo" 
+              width={printConfig.logo.width}
+              height={printConfig.logo.height}
+              style={{ 
+                width: `${printConfig.logo.width}px`, 
+                height: `${printConfig.logo.height}px`,
+                objectFit: 'contain',
+                display: 'block',
+                margin: '0 auto'
+              }}
+              onError={(e: any) => {
+                console.error('Logo failed to load:', printConfig.logo.path);
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        ) : null;
 
-      <div className="print-voucher-code">{formatCode(voucher.code)}</div>
+      case 'header':
+        return (
+          <div key="header" className="print-header">
+            <div className="print-title">{printConfig?.header.title || "WiFi Access Voucher"}</div>
+            {printConfig?.header.subtitle && (
+              <div className="print-subtitle">{printConfig.header.subtitle}</div>
+            )}
+          </div>
+        );
 
-      {fields.map((field) => (
-        <div className="print-info-row">
-          <span className="print-label">{field.label}:</span>
-          <span className="print-value">{field.value}</span>
-        </div>
-      ))}
+      case 'code':
+        return (
+          <div key="code" className="print-voucher-code">{formatCode(voucher.code)}</div>
+        );
 
-      {wifiConfig && (
-        <div className="print-qr-section">
-          {wifiString && (
-            <>
-              <div className="font-bold mb-2">Scan to Connect</div>
-              <QRCodeSVG
-                value={wifiString}
-                size={printConfig?.qrCode?.size || 180}
-                level="H"
-                marginSize={4}
-                title="Wi-Fi Access QR Code"
-              />
-            </>
-          )}
-          <div className="print-qr-text">
-            <strong>Network:</strong> {wifiConfig.ssid}
-            <br />
-            {wifiConfig.type === "nopass" ? (
-              "No Password"
-            ) : (
+      case 'details':
+        return (
+          <div key="details">
+            {fields.map((field, index) => (
+              <div key={index} className="print-info-row">
+                <span className="print-label">{field.label}:</span>
+                <span className="print-value">{field.value}</span>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'qr':
+        return wifiConfig ? (
+          <div key="qr" className="print-qr-section">
+            {wifiString && (
               <>
-                <strong>Password:</strong> {wifiConfig.password}
+                <div className="font-bold mb-2">Scan to Connect</div>
+                <QRCodeSVG
+                  value={wifiString}
+                  size={printConfig?.qrCode?.size || 180}
+                  level="H"
+                  marginSize={4}
+                  title="Wi-Fi Access QR Code"
+                />
               </>
             )}
-            {wifiConfig.hidden && <div>(Hidden Network)</div>}
-          </div>
-        </div>
-      )}
-
-      {printConfig?.additionalInfo.enabled && printConfig.additionalInfo.fields.length > 0 && (
-        <div className="print-additional-info">
-          {printConfig.additionalInfo.fields.map((field, index) => (
-            <div key={index} className="print-tos-item">
-              <div className="print-tos-label">{field.label}</div>
-              <div className="print-tos-value" style={{ whiteSpace: 'pre-line' }}>{field.value}</div>
+            <div className="print-qr-text">
+              <strong>Network:</strong> {wifiConfig.ssid}
+              <br />
+              {wifiConfig.type === "nopass" ? (
+                "No Password"
+              ) : (
+                <>
+                  <strong>Password:</strong> {wifiConfig.password}
+                </>
+              )}
+              {wifiConfig.hidden && <div>(Hidden Network)</div>}
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ) : null;
 
-      <div className="print-footer">
-        {printConfig?.footer.customText && (
-          <div className="print-custom-text">{printConfig.footer.customText}</div>
-        )}
-        {printConfig?.footer.showVoucherId && (
-          <div>
-            <strong className="text-sm">ID:</strong> {voucher.id}
+      case 'additionalInfo':
+        return printConfig?.additionalInfo.enabled && printConfig.additionalInfo.fields.length > 0 ? (
+          <div key="additionalInfo" className="print-additional-info">
+            {printConfig.additionalInfo.fields.map((field, index) => (
+              <div key={index} className="print-tos-item">
+                <div className="print-tos-label">{field.label}</div>
+                <div className="print-tos-value" style={{ whiteSpace: 'pre-line' }}>{field.value}</div>
+              </div>
+            ))}
           </div>
-        )}
-        {printConfig?.footer.showPrintedTime && (
-          <div>
-            <strong className="text-sm">Printed:</strong>{" "}
-            {new Date().toUTCString()}
+        ) : null;
+
+      case 'footer':
+        return (
+          <div key="footer" className="print-footer">
+            {printConfig?.footer.customText && (
+              <div className="print-custom-text">{printConfig.footer.customText}</div>
+            )}
+            {printConfig?.footer.showVoucherId && (
+              <div>
+                <strong className="text-sm">ID:</strong> {voucher.id}
+              </div>
+            )}
+            {printConfig?.footer.showPrintedTime && (
+              <div>
+                <strong className="text-sm">Printed:</strong>{" "}
+                {new Date().toUTCString()}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const layoutOrder = printConfig?.layout?.order || ['logo', 'header', 'code', 'details', 'qr', 'additionalInfo', 'footer'];
+
+  return (
+    <div className="print-voucher">
+      {layoutOrder.map(section => renderSection(section))}
     </div>
   );
 }
