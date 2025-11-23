@@ -1,0 +1,49 @@
+{
+  "tiers": [
+    {
+      "id": "seasonal",
+      "name": "Full Season Premium",
+      "description": "Unlimited Wifi Access for the Entire Season",
+      "durationHours": 16666.65,
+      "downloadMbps": null,
+      "uploadMbps": null,
+      "dataLimitMB": null
+    },
+    {
+      "id": "premium",
+      "name": "Premium",
+      "description": "Unlimited Wifi Access for 24 Hours",
+      "durationHours": 24,
+      "downloadMbps": null,
+      "uploadMbps": null,
+      "dataLimitMB": null
+    },
+    {
+      "id": "standard",
+      "name": "Standard",
+      "description": "10/5 Mbps, 5GB (24h)",
+      "durationHours": 24,
+      "downloadMbps": 10,
+      "uploadMbps": 5,
+      "dataLimitMB": 5000
+    },
+    {
+      "id": "basic",
+      "name": "Basic",
+      "description": "5/2 Mbps, 1GB (4h)",
+      "durationHours": 4,
+      "downloadMbps": 5,
+      "uploadMbps": 2,
+      "dataLimitMB": 1000
+    },
+    {
+      "id": "guest",
+      "name": "Guest",
+      "description": "Free limited access (2/1 Mbps, 500MB (1h)",
+      "durationHours": 1,
+      "downloadMbps": 2,
+      "uploadMbps": 1,
+      "dataLimitMB": 500
+    }
+  ]
+}

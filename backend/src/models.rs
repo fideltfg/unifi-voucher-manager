@@ -4,31 +4,72 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Voucher {
-    #[serde(rename = "_id")]
+    #[serde(rename = "id", alias = "_id")]
     pub id: String,
-    #[serde(rename = "create_time", deserialize_with = "deserialize_timestamp")]
+    #[serde(
+        rename = "createdAt",
+        alias = "create_time",
+        deserialize_with = "deserialize_timestamp"
+    )]
     pub created_at: String,
-    #[serde(rename = "note", default)]
+    #[serde(rename = "name", alias = "note", default)]
     pub name: String,
     pub code: String,
-    #[serde(rename = "quota", default, deserialize_with = "deserialize_optional_u64")]
+    #[serde(
+        rename = "authorizedGuestLimit",
+        alias = "quota",
+        default,
+        deserialize_with = "deserialize_optional_u64",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub authorized_guest_limit: Option<u64>,
-    #[serde(rename = "used", default)]
+    #[serde(rename = "authorizedGuestCount", alias = "used", default)]
     pub authorized_guest_count: u64,
-    #[serde(rename = "start_time", default, deserialize_with = "deserialize_optional_timestamp")]
+    #[serde(
+        rename = "activatedAt",
+        alias = "start_time",
+        default,
+        deserialize_with = "deserialize_optional_timestamp",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub activated_at: Option<String>,
-    #[serde(rename = "end_time", default, deserialize_with = "deserialize_optional_timestamp")]
+    #[serde(
+        rename = "expiresAt",
+        alias = "end_time",
+        default,
+        deserialize_with = "deserialize_optional_timestamp",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub expires_at: Option<String>,
     #[serde(default)]
     pub expired: bool,
-    #[serde(rename = "duration", default)]
+    #[serde(rename = "timeLimitMinutes", alias = "duration", default)]
     pub time_limit_minutes: u64,
-    #[serde(rename = "qos_overwrite", default, deserialize_with = "deserialize_optional_u64")]
+    #[serde(
+        rename = "dataUsageLimitMBytes",
+        alias = "qos_overwrite",
+        default,
+        deserialize_with = "deserialize_optional_u64",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub data_usage_limit_mbytes: Option<u64>,
-    #[serde(rename = "qos_rate_max_up", default, deserialize_with = "deserialize_optional_u64")]
-    pub rx_rate_limit_kbps: Option<u64>,
-    #[serde(rename = "qos_rate_max_down", default, deserialize_with = "deserialize_optional_u64")]
+    #[serde(
+        rename = "txRateLimitKbps",
+        alias = "qos_rate_max_up",
+        default,
+        deserialize_with = "deserialize_optional_u64",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub tx_rate_limit_kbps: Option<u64>,
+    #[serde(
+        rename = "rxRateLimitKbps",
+        alias = "qos_rate_max_down",
+        default,
+        deserialize_with = "deserialize_optional_u64",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub rx_rate_limit_kbps: Option<u64>,
+    
 }
 
 // Custom deserializer for timestamps that can be either integers or strings

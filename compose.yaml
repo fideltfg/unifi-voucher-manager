@@ -1,5 +1,4 @@
-version: '3.8'
-
+---
 services:
   unifi-voucher-manager:
     image: "docker.io/etiennecollin/unifi-voucher-manager:latest"
@@ -15,7 +14,10 @@ services:
     container_name: "unifi-voucher-manager"
     restart: "unless-stopped"
     ports:
-      - "3011:3000"
+      - "3012:3000"
+    
+    volumes:
+      - ./voucher-tiers.json:/app/frontend/public/voucher-tiers.json:ro
 
     # SEE README FOR ENVIRONMENT VARIABLES DOCUMENTATION
     env_file:
