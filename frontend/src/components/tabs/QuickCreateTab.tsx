@@ -46,8 +46,6 @@ export default function QuickCreateTab() {
     e.preventDefault();
     setLoading(true);
 
-    const form = e.currentTarget;
-    const data = new FormData(form);
     const tier = tiers.find((t) => t.id === selectedTierId);
 
     if (!tier) {
@@ -58,7 +56,7 @@ export default function QuickCreateTab() {
 
     const payload: VoucherCreateData = {
       count: 1,
-      name: String(data.get("name")),
+      name: `${tier.name} Voucher`,
       timeLimitMinutes: Math.round(tier.durationHours * 60),
       authorizedGuestLimit: 1,
       rxRateLimitKbps: tier.downloadMbps ? tier.downloadMbps * 1000 : null,
@@ -71,7 +69,6 @@ export default function QuickCreateTab() {
       const voucher = res.vouchers?.[0];
       if (voucher) {
         setNewVoucher(voucher);
-        form.reset();
       } else {
         notify(
           "Voucher created, but its data was found in response",
@@ -123,13 +120,33 @@ export default function QuickCreateTab() {
           ))}
         </select>
 
-        <label className="block font-medium mb-1">Name</label>
-        <input 
-          name="name" 
-          defaultValue={`${selectedTier.name} Voucher`}
-          key={selectedTierId}
-          required 
-        />
+        <div className="space-y-2">
+          <label className="block font-medium mb-1">Tier Details</label>
+          <div className="p-4 bg-interactive border border-subtle rounded-xl space-y-2">
+            <div className="flex justify-between">
+              <span className="text-secondary">Duration:</span>
+              <span className="font-semibold">{selectedTier.durationHours} hours</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-secondary">Download Speed:</span>
+              <span className="font-semibold">
+                {selectedTier.downloadMbps ? `${selectedTier.downloadMbps} Mbps` : 'Unlimited'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-secondary">Upload Speed:</span>
+              <span className="font-semibold">
+                {selectedTier.uploadMbps ? `${selectedTier.uploadMbps} Mbps` : 'Unlimited'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-secondary">Data Limit:</span>
+              <span className="font-semibold">
+                {selectedTier.dataLimitMB ? `${selectedTier.dataLimitMB} MB` : 'Unlimited'}
+              </span>
+            </div>
+          </div>
+        </div>
 
         <button type="submit" disabled={loading} className="btn-primary w-full">
           {loading ? "Creating…" : "Create Voucher"}
