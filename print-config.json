@@ -1,4 +1,15 @@
 {
+  "layout": {
+    "order": [
+      "logo",
+      "header",
+      "qr",
+      "details",
+      "code",
+      "additionalInfo",
+      "footer"
+    ]
+  },
   "logo": {
     "enabled": true,
     "path": "/logo.png",
@@ -16,9 +27,6 @@
   },
   "qrCode": {
     "size": 240
-  },
-  "layout": {
-    "order": ["logo", "header", "code", "details", "qr", "additionalInfo", "footer"]
   },
   "additionalInfo": {
     "enabled": true,
