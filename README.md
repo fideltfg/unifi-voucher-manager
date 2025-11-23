@@ -1,12 +1,18 @@
 # UniFi Voucher Manager
 
-[![Docker Image Version (latest by date)](https://img.shields.io/docker/v/etiennecollin/unifi-voucher-manager?sort=semver&label=Version&logo=docker&color=blue) ![Docker Pulls](https://img.shields.io/docker/pulls/etiennecollin/unifi-voucher-manager?label=Pulls&logo=docker&color=blue)](https://hub.docker.com/r/etiennecollin/unifi-voucher-manager)
-[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/etiennecollin/unifi-voucher-manager/release_docker.yaml?label=Docker%20Build&logo=github) ![GitHub License](https://img.shields.io/github/license/etiennecollin/unifi-voucher-manager?label=License&logo=github&color=red)](https://github.com/etiennecollin/unifi-voucher-manager)
-
-UVM is a modern, touch-friendly web application for managing WiFi vouchers on UniFi controllers.
-Perfect for businesses, cafes, hotels, and home networks that need to provide guest WiFi access.
+A modern, touch-friendly web application for managing WiFi vouchers on UniFi controllers with enhanced print customization features.
+Perfect for businesses, cafes, hotels, and home networks that need to provide guest WiFi access with professional printed vouchers.
 
 ![WiFi Voucher Manager](./assets/view.png)
+
+> **Note:** This is a customized fork with additional features including:
+> - Preset voucher tiers with speed and data limits
+> - Live configuration via JSON files
+> - Enhanced print voucher customization for thermal printers
+> - UniFi-matched dark theme
+> - Rolling voucher configuration management
+>
+> Based on [etiennecollin/unifi-voucher-manager](https://github.com/etiennecollin/unifi-voucher-manager)
 
 <!-- vim-markdown-toc GFM -->
 
@@ -35,7 +41,12 @@ Perfect for businesses, cafes, hotels, and home networks that need to provide gu
 
 ### 🎫 Voucher Management & WiFi QR Code
 
-- **Quick Create** - Generate guest vouchers with preset durations (1 hour to 1 week)
+- **Preset Voucher Tiers** - Quick create vouchers with predefined configurations:
+  - Duration (hours to days)
+  - Download/upload speed limits (Mbps)
+  - Data usage caps (MB)
+  - Display tier details before creation
+  - Live configuration via `voucher-tiers.json`
 - **Custom Create** - Full control over voucher parameters:
   - Custom name
   - Duration (minutes to days)
@@ -43,14 +54,21 @@ Perfect for businesses, cafes, hotels, and home networks that need to provide gu
   - Data usage limits
   - Upload/download speed limits
 - **Browse Vouchers** - Browse and search existing vouchers by name
+  - Card view or compact list view
+  - Real-time filtering
 - **Bulk Operations** - Select and delete multiple vouchers at once
-- **Print Vouchers** - Print vouchers in either list or grid format; thermal printers friendly
-  - Customizable print layout with logo support
-  - Configurable additional information fields
-  - Optimized for 80mm thermal printers (e.g., Epson TM-T88V)
+- **Enhanced Print System** - Professional voucher printing for thermal printers:
+  - **Logo support** - Add your business logo
+  - **Customizable layout** - Header, footer, and additional information fields
+  - **Terms of Service** - Display TOS or usage policies
+  - **Optimized for thermal printers** - Specifically designed for 80mm printers (Epson TM-T88V, etc.)
+  - **Live configuration** - Changes via `print-config.json` take effect immediately
+  - **List or grid format** - Choose your print layout
 - **Auto-cleanup** - Remove expired vouchers with a single click
 - **QR Code** - Easily connect guests to your network
 - **Rolling Vouchers** - Automatically generate a voucher for the next guest when the current one gets used
+  - Configurable duration, speed limits, and data caps
+  - Settings managed in `voucher-tiers.json`
 
 ### Kiosk Display
 
@@ -63,15 +81,27 @@ The kiosk page (`/kiosk`) provides a guest-friendly interface displaying:
 ### 🎨 Modern Interface
 
 - **Touch-Friendly** – Optimized for tablet, mobile, and desktop
-- **Dark/Light Mode** – Follows system preference, with manual override
+- **UniFi-Matched Dark Theme** – Custom dark theme matching UniFi's official design system
+  - Dark mode with UniFi colors (#191b1e, #1f2226, #e1e3e9)
+  - Light mode support
+  - Theme persists across sessions
+  - Instant theme switching without white flash
 - **Responsive Design** - Works seamlessly across all screen sizes
+- **Multiple View Modes** - Switch between card and list views
 - **Smooth Animations** – Semantic transitions for polished UX
 - **Real-time Notifications** - Instant feedback for all operations
 
 ### 🔧 Technical Features
 
 - **Docker Ready** - Easy deployment with Docker Compose and included healthcheck
-- **UniFi Integration** - Direct API connection to UniFi controllers
+- **UniFi Integration** - Session-based authentication with traditional UniFi Controller API
+  - Automatic session management (30-minute expiry with auto-refresh)
+  - Username/password authentication
+  - Support for self-signed certificates
+- **Live Configuration** - JSON-based configuration files with volume mounts
+  - `voucher-tiers.json` - Tier presets and rolling voucher settings
+  - `print-config.json` - Print layout customization
+  - Changes take effect immediately without rebuild
 - **Secure Architecture** - Next.js (TypeScript + Tailwind CSS) frontend with an Axum-based Rust backend that handles all UniFi Controller communication, keeping credentials isolated from the user-facing UI
 
 ## 🚀 Quick Start
@@ -80,22 +110,38 @@ The kiosk page (`/kiosk`) provides a guest-friendly interface displaying:
 
 1. **Create the configuration files**
    ```bash
-   # Download the compose file and example .env
-   curl -o compose.yaml https://raw.githubusercontent.com/etiennecollin/unifi-voucher-manager/main/compose.yaml
-   curl -o .env.example https://raw.githubusercontent.com/etiennecollin/unifi-voucher-manager/main/.env.example
+   # Download the compose file and configuration examples
+   curl -o compose.yaml https://raw.githubusercontent.com/fideltfg/unifi-voucher-manager/main/compose.yaml
+   curl -o .env.example https://raw.githubusercontent.com/fideltfg/unifi-voucher-manager/main/.env.example
+   curl -o voucher-tiers.json https://raw.githubusercontent.com/fideltfg/unifi-voucher-manager/main/voucher-tiers.json
+   curl -o print-config.json https://raw.githubusercontent.com/fideltfg/unifi-voucher-manager/main/print-config.json
    
    # Copy the example and edit with your settings
    cp .env.example .env
    nano .env  # or use your preferred editor
    ```
+
 2. **Configure your environment**
-   - Edit the `.env` file with your UniFi controller details and preferences (see [Environment Variables](#environment-variables)).
-3. **Start the application**
+   - Edit the `.env` file with your UniFi controller details (see [Environment Variables](#environment-variables))
+   - Customize `voucher-tiers.json` with your preferred tier presets (optional)
+   - Customize `print-config.json` for your printed vouchers (optional)
+
+3. **Add your logo (optional)**
    ```bash
-   docker compose up -d --force-recreate
+   # Create the frontend public directory
+   mkdir -p frontend/public
+   
+   # Copy your logo (PNG recommended, 180x60px for thermal printers)
+   cp /path/to/your/logo.png frontend/public/logo.png
    ```
-4. **Access the interface**
-   - Open your browser to `http://localhost:3000`.
+
+4. **Start the application**
+   ```bash
+   docker compose up -d --build --force-recreate
+   ```
+
+5. **Access the interface**
+   - Open your browser to `http://localhost:3000` (or your configured port)
 
 ### Without Docker
 
@@ -105,7 +151,8 @@ The kiosk page (`/kiosk`) provides a guest-friendly interface displaying:
    - `npm >= 11.4.2`
 2. **Clone the repository**
    ```bash
-   git clone https://github.com/etiennecollin/unifi-voucher-manager
+   git clone https://github.com/fideltfg/unifi-voucher-manager
+   cd unifi-voucher-manager
    ```
 3. **Configure your environment**
    - In your shell, set the required environment variables (see [Environment Variables](#environment-variables))
@@ -147,16 +194,16 @@ The kiosk page (`/kiosk`) provides a guest-friendly interface displaying:
 
 ### Voucher Tiers
 
-The application supports predefined voucher tiers with preset durations and speed/data limits. These tiers are configured in the `voucher-tiers.json` file.
+The application supports predefined voucher tiers with preset durations and speed/data limits. These tiers are configured in the `voucher-tiers.json` file and are volume-mounted into the container for live editing.
 
-**Example configuration:**
+**Configuration structure:**
 ```json
 {
   "rollingVoucher": {
-    "enabled": true,
-    "durationHours": 24,
-    "downloadMbps": "unlimited",
-    "uploadMbps": "unlimited",
+    "enabled": false,
+    "durationHours": 1,
+    "downloadMbps": 5,
+    "uploadMbps": 2,
     "dataLimitMB": "unlimited"
   },
   "tiers": [
@@ -166,6 +213,13 @@ The application supports predefined voucher tiers with preset durations and spee
       "downloadMbps": 10,
       "uploadMbps": 5,
       "dataLimitMB": 500
+    },
+    {
+      "name": "4 Hours Standard",
+      "durationHours": 4,
+      "downloadMbps": 25,
+      "uploadMbps": 10,
+      "dataLimitMB": 2000
     },
     {
       "name": "1 Day Premium",
@@ -179,16 +233,29 @@ The application supports predefined voucher tiers with preset durations and spee
 ```
 
 **Configuration options:**
-- `durationHours`: Duration in hours (converted to minutes internally)
-- `downloadMbps`: Download speed in Mbps (converted to Kbps internally), or `"unlimited"`
-- `uploadMbps`: Upload speed in Mbps (converted to Kbps internally), or `"unlimited"`
+- `durationHours`: Duration in hours (automatically converted to minutes for UniFi API)
+- `downloadMbps`: Download speed in Mbps (automatically converted to Kbps), or `"unlimited"`
+- `uploadMbps`: Upload speed in Mbps (automatically converted to Kbps), or `"unlimited"`
 - `dataLimitMB`: Data limit in megabytes, or `"unlimited"`
+
+**Rolling voucher settings:**
+The `rollingVoucher` section configures automatically-generated vouchers for guests:
+- `enabled`: Enable/disable rolling voucher feature
+- Same speed and data limit options as regular tiers
+- Settings are loaded at container startup
+
+**Features:**
+- Create vouchers from preset tiers with one click
+- View tier details (speed, data, duration) before creation
+- Edit tiers without rebuilding container
+- Frontend reads configuration for display
+- Backend reads configuration for rolling voucher creation
 
 ### Print Configuration
 
-Customize printed vouchers for thermal printers using the `print-config.json` file.
+Customize printed vouchers for thermal printers using the `print-config.json` file. This feature is specifically optimized for 80mm thermal printers like the Epson TM-T88V.
 
-**Example configuration:**
+**Quick configuration:**
 ```json
 {
   "logo": {
@@ -199,10 +266,10 @@ Customize printed vouchers for thermal printers using the `print-config.json` fi
   },
   "header": {
     "title": "WiFi Access Voucher",
-    "subtitle": "Welcome to Our Network"
+    "subtitle": ""
   },
   "footer": {
-    "customText": "Thank you for visiting!",
+    "customText": "",
     "showVoucherId": true,
     "showPrintedTime": true
   },
@@ -210,35 +277,78 @@ Customize printed vouchers for thermal printers using the `print-config.json` fi
     "enabled": true,
     "fields": [
       {
-        "label": "Support",
-        "value": "support@example.com"
-      },
-      {
-        "label": "Location",
-        "value": "Building A, Floor 2"
+        "label": "Terms of Service",
+        "value": "By using this network you agree to our terms of service and acceptable use policy."
       }
     ]
   }
 }
 ```
 
-**Configuration options:**
-- `logo.enabled`: Enable/disable logo display
-- `logo.path`: Path to logo file (relative to frontend public directory)
-- `logo.width/height`: Logo dimensions in pixels
-- `header.title`: Main title text
-- `header.subtitle`: Optional subtitle below title
-- `footer.customText`: Custom text in footer (e.g., business info, thank you message)
-- `footer.showVoucherId`: Show/hide voucher ID
-- `footer.showPrintedTime`: Show/hide print timestamp
-- `additionalInfo.enabled`: Enable/disable additional information section
-- `additionalInfo.fields`: Array of custom label/value pairs to display
+**Print layout order:**
+1. **Logo** (optional) - Your business logo at the top
+2. **Header** - Title and optional subtitle
+3. **Voucher Code** - Large, prominent display code
+4. **Voucher Details** - Duration, max guests, data limit, speeds
+5. **QR Code** - WiFi connection QR code (if configured)
+6. **Network Info** - SSID and password
+7. **Additional Info** - Terms of Service or custom information
+8. **Footer** - Custom text, voucher ID, print timestamp
 
-**To add a logo:**
-1. Place your logo image in the `frontend/public` directory (e.g., `logo.png`)
-2. Update the `logo.path` in `print-config.json` to `/logo.png`
-3. Adjust `logo.width` and `logo.height` as needed for your printer
-4. The configuration file is volume-mounted, so changes take effect immediately
+**Configuration options:**
+
+**Logo:**
+- `enabled`: Show/hide logo
+- `path`: Path to logo file in public directory (e.g., `/logo.png`)
+- `width`, `height`: Dimensions in pixels (recommended: 180x60 for thermal printers)
+- Tips: Use high-contrast black/white designs, avoid gradients
+
+**Header:**
+- `title`: Main header text (bold, large font)
+- `subtitle`: Optional smaller text below title
+
+**Footer:**
+- `customText`: Custom footer message (e.g., "Thank you for visiting!")
+- `showVoucherId`: Display voucher ID for troubleshooting
+- `showPrintedTime`: Display when voucher was printed
+
+**Additional Info:**
+- `enabled`: Show/hide additional information section
+- `fields`: Array of label/value pairs
+  - Appears below QR code and network information
+  - Common uses: Terms of Service, support contact, business hours
+  - Text wraps automatically for thermal printer width
+
+**Setup instructions:**
+
+1. **Add your logo:**
+   ```bash
+   # Create public directory if it doesn't exist
+   mkdir -p frontend/public
+   
+   # Copy your logo (PNG recommended)
+   cp /path/to/your/logo.png frontend/public/logo.png
+   ```
+
+2. **Customize print-config.json:**
+   - Edit the file on your host machine
+   - Changes take effect immediately (no restart needed)
+   - File is volume-mounted for live updates
+
+3. **Test your layout:**
+   - Print a voucher from the UI
+   - Use browser print preview to check layout
+   - Adjust logo size or text as needed
+   - Re-test (changes are instant)
+
+**For detailed customization guide, see [PRINT_CUSTOMIZATION.md](PRINT_CUSTOMIZATION.md)**
+
+**Thermal printer tips:**
+- Keep logo width ≤ 220px for 80mm paper
+- Use high-contrast images (black/white work best)
+- Test with print preview before actual printing
+- Set browser margins to minimum (3-4mm)
+- Portrait orientation recommended
 
 ### Rolling Vouchers and Kiosk Page
 
@@ -329,9 +439,9 @@ Make sure to configure the required variables. The optional variables generally 
 - **`TIMEZONE`: [`timezone identifier`](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)** (_Optional_)
   - **Description**: [Timezone identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) used to format dates and time.
   - **Example**: `UTC` (default)
-- **`ROLLING_VOUCHER_DURATION_MINUTES`: `minutes`** (_Optional_)
-  - **Description**: Number of minutes a rolling voucher will be valid for once activated.
-  - **Example**: `480` (default)
+- **`ROLLING_VOUCHER_ENABLED`: `bool`** (_Optional_)
+  - **Description**: Enable/disable the rolling voucher feature. Note: Rolling voucher settings (duration, speed limits, data caps) are now configured in `voucher-tiers.json` instead of environment variables.
+  - **Example**: `false` (default)
 - **`WIFI_SSID`: `string`** (_Optional_)
   - **Description**: WiFi SSID used for the QR code. (required for QR code to be generated)
   - **Example**: `My WiFi SSID`
@@ -366,13 +476,32 @@ Make sure to configure the required variables. The optional variables generally 
 
 ### Getting Help
 
-- Check the [Issues](https://github.com/etiennecollin/unifi-voucher-manager/issues) page
+- Check the [Issues](https://github.com/fideltfg/unifi-voucher-manager/issues) page
 - Create a new issue with detailed information about your problem
 - Include relevant logs and environment details (redact sensitive information)
   - Run the container/backend with `BACKEND_LOG_LEVEL="debug"`
   - Include Docker logs: `docker logs unifi-voucher-manager`
   - Include browser logs: generally by hitting `F12` and going to the 'console' tab of your browser
+- For print customization issues, see [PRINT_CUSTOMIZATION.md](PRINT_CUSTOMIZATION.md)
+
+## 📚 Additional Documentation
+
+- **[PRINT_CUSTOMIZATION.md](PRINT_CUSTOMIZATION.md)** - Complete guide for customizing printed vouchers with examples and troubleshooting
+
+## 🙏 Credits
+
+This fork is based on the excellent work by [etiennecollin](https://github.com/etiennecollin/unifi-voucher-manager).
+
+Additional features and customizations:
+- Username/password authentication instead of API keys
+- Preset voucher tiers with live configuration
+- Enhanced print system with logo and custom fields
+- UniFi-matched dark theme
+- Rolling voucher configuration management
+- Improved Docker deployment
 
 ---
 
 **⭐ If this project helped you, please consider giving it a star!**
+
+**Original project:** [etiennecollin/unifi-voucher-manager](https://github.com/etiennecollin/unifi-voucher-manager)
