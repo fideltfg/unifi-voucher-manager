@@ -2,6 +2,7 @@
 
 import Spinner from "@/components/utils/Spinner";
 import VoucherCard from "@/components/VoucherCard";
+import VoucherListItem from "@/components/VoucherListItem";
 import VoucherModal from "@/components/modals/VoucherModal";
 import { PrintMode } from "@/app/print/page";
 import { Voucher } from "@/types/voucher";
@@ -9,6 +10,8 @@ import { api } from "@/utils/api";
 import { notify } from "@/utils/notifications";
 import { useMemo, useEffect, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
+
+type ViewMode = "card" | "list";
 
 export default function VouchersTab() {
   const [loading, setLoading] = useState(true);
@@ -18,6 +21,7 @@ export default function VouchersTab() {
   const [editMode, setEditMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("card");
   const router = useRouter();
 
   const filteredVouchers = useMemo(() => {
@@ -167,6 +171,48 @@ export default function VouchersTab() {
             <button onClick={load} className="btn-secondary">
               Refresh
             </button>
+            <div className="ml-auto flex gap-2">
+              <button
+                onClick={() => setViewMode("card")}
+                className={`btn-secondary ${viewMode === "card" ? "!bg-accent !text-white" : ""}`}
+                title="Card View"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={`btn-secondary ${viewMode === "list" ? "!bg-accent !text-white" : ""}`}
+                title="List View"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              </button>
+            </div>
           </>
         ) : (
           <>
@@ -230,10 +276,22 @@ export default function VouchersTab() {
             ? "No vouchers found matching your search"
             : "No vouchers found"}
         </div>
-      ) : (
+      ) : viewMode === "card" ? (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredVouchers.map((v) => (
             <VoucherCard
+              key={v.id}
+              voucher={v}
+              editMode={editMode}
+              selected={selectedVouchers.includes(v)}
+              onClick={clickCard}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filteredVouchers.map((v) => (
+            <VoucherListItem
               key={v.id}
               voucher={v}
               editMode={editMode}
