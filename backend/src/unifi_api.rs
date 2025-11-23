@@ -523,6 +523,10 @@ impl<'a> UnifiAPI<'a> {
     }
 
     pub async fn create_rolling_voucher(&self, ip: &str) -> Result<Voucher, StatusCode> {
+        let voucher_config = crate::voucher_config::VOUCHER_CONFIG
+            .get()
+            .expect("Voucher config not initialized");
+
         let request = CreateVoucherRequest {
             count: 1,
             name: format!(
@@ -531,11 +535,11 @@ impl<'a> UnifiAPI<'a> {
                 chrono::Local::now().format("%Y%m%d%H%M%S"),
                 ip
             ),
-            time_limit_minutes: self.environment.rolling_voucher_duration_minutes,
+            time_limit_minutes: voucher_config.duration_minutes(),
             authorized_guest_limit: None,
-            data_usage_limit_mbytes: None,
-            tx_rate_limit_kbps: None,
-            rx_rate_limit_kbps: None,
+            data_usage_limit_mbytes: voucher_config.data_limit_mb(),
+            tx_rate_limit_kbps: voucher_config.download_kbps(),
+            rx_rate_limit_kbps: voucher_config.upload_kbps(),
         };
 
         let rolling = self

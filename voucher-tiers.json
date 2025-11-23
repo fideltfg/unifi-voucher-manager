@@ -1,4 +1,11 @@
 {
+  "rollingVoucher": {
+    "enabled": false,
+    "durationHours": 24,
+    "downloadMbps": null,
+    "uploadMbps": null,
+    "dataLimitMB": null
+  },
   "tiers": [
     {
       "id": "seasonal",

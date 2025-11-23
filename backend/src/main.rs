@@ -12,6 +12,7 @@ use backend::{
     handlers::*,
     tasks::run_daily_purge,
     unifi_api::{UNIFI_API, UnifiAPI},
+    voucher_config::{VOUCHER_CONFIG, VoucherConfig},
 };
 
 #[tokio::main]
@@ -42,6 +43,20 @@ async fn main() {
         .set(env)
         .expect("Failed to set environment variables");
     let environment = ENVIRONMENT.get().expect("Environment not set");
+
+    // =================================
+    // Load voucher configuration
+    // =================================
+    let voucher_config = match VoucherConfig::try_new() {
+        Ok(cfg) => cfg,
+        Err(e) => {
+            error!("Failed to load voucher configuration: {e}");
+            std::process::exit(1);
+        }
+    };
+    VOUCHER_CONFIG
+        .set(voucher_config)
+        .expect("Failed to set voucher configuration");
 
     // =================================
     // Setup UniFi Controller API connection
