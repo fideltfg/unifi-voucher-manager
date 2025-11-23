@@ -5,13 +5,7 @@ Perfect for businesses, cafes, hotels, and home networks that need to provide gu
 
 ![WiFi Voucher Manager](./assets/view.png)
 
-> **Note:** This is a customized fork with additional features including:
-> - Preset voucher tiers with speed and data limits
-> - Live configuration via JSON files
-> - Enhanced print voucher customization for thermal printers
-> - UniFi-matched dark theme
-> - Rolling voucher configuration management
->
+> **Note:** This is a customized fork with enhanced features for thermal printer voucher printing, preset tiers, and live JSON configuration.
 > Based on [etiennecollin/unifi-voucher-manager](https://github.com/etiennecollin/unifi-voucher-manager)
 
 <!-- vim-markdown-toc GFM -->
@@ -233,23 +227,12 @@ The application supports predefined voucher tiers with preset durations and spee
 ```
 
 **Configuration options:**
-- `durationHours`: Duration in hours (automatically converted to minutes for UniFi API)
-- `downloadMbps`: Download speed in Mbps (automatically converted to Kbps), or `"unlimited"`
-- `uploadMbps`: Upload speed in Mbps (automatically converted to Kbps), or `"unlimited"`
+- `durationHours`: Duration in hours (auto-converted to minutes)
+- `downloadMbps` / `uploadMbps`: Speed in Mbps (auto-converted to Kbps), or `"unlimited"`
 - `dataLimitMB`: Data limit in megabytes, or `"unlimited"`
+- `rollingVoucher.enabled`: Enable/disable rolling voucher feature
 
-**Rolling voucher settings:**
-The `rollingVoucher` section configures automatically-generated vouchers for guests:
-- `enabled`: Enable/disable rolling voucher feature
-- Same speed and data limit options as regular tiers
-- Settings are loaded at container startup
-
-**Features:**
-- Create vouchers from preset tiers with one click
-- View tier details (speed, data, duration) before creation
-- Edit tiers without rebuilding container
-- Frontend reads configuration for display
-- Backend reads configuration for rolling voucher creation
+Changes to this file take effect immediately without container rebuild.
 
 ### Print Configuration
 
@@ -295,60 +278,20 @@ Customize printed vouchers for thermal printers using the `print-config.json` fi
 7. **Additional Info** - Terms of Service or custom information
 8. **Footer** - Custom text, voucher ID, print timestamp
 
-**Configuration options:**
+**Main options:**
+- `logo`: Enable logo, set path (e.g., `/logo.png`), and dimensions (recommended: 180x60px)
+- `header`: Customize title and optional subtitle
+- `footer`: Add custom text, toggle voucher ID and print timestamp
+- `additionalInfo`: Add custom fields (e.g., Terms of Service, support info)
 
-**Logo:**
-- `enabled`: Show/hide logo
-- `path`: Path to logo file in public directory (e.g., `/logo.png`)
-- `width`, `height`: Dimensions in pixels (recommended: 180x60 for thermal printers)
-- Tips: Use high-contrast black/white designs, avoid gradients
+**Quick setup:**
+1. Place your logo: `frontend/public/logo.png` (PNG recommended, 180x60px)
+2. Edit `print-config.json` - changes take effect immediately
+3. Test with browser print preview before printing
 
-**Header:**
-- `title`: Main header text (bold, large font)
-- `subtitle`: Optional smaller text below title
+**Thermal printer tips:** Keep logo ≤220px width, use high-contrast images, set browser margins to 3-4mm minimum.
 
-**Footer:**
-- `customText`: Custom footer message (e.g., "Thank you for visiting!")
-- `showVoucherId`: Display voucher ID for troubleshooting
-- `showPrintedTime`: Display when voucher was printed
-
-**Additional Info:**
-- `enabled`: Show/hide additional information section
-- `fields`: Array of label/value pairs
-  - Appears below QR code and network information
-  - Common uses: Terms of Service, support contact, business hours
-  - Text wraps automatically for thermal printer width
-
-**Setup instructions:**
-
-1. **Add your logo:**
-   ```bash
-   # Create public directory if it doesn't exist
-   mkdir -p frontend/public
-   
-   # Copy your logo (PNG recommended)
-   cp /path/to/your/logo.png frontend/public/logo.png
-   ```
-
-2. **Customize print-config.json:**
-   - Edit the file on your host machine
-   - Changes take effect immediately (no restart needed)
-   - File is volume-mounted for live updates
-
-3. **Test your layout:**
-   - Print a voucher from the UI
-   - Use browser print preview to check layout
-   - Adjust logo size or text as needed
-   - Re-test (changes are instant)
-
-**For detailed customization guide, see [PRINT_CUSTOMIZATION.md](PRINT_CUSTOMIZATION.md)**
-
-**Thermal printer tips:**
-- Keep logo width ≤ 220px for 80mm paper
-- Use high-contrast images (black/white work best)
-- Test with print preview before actual printing
-- Set browser margins to minimum (3-4mm)
-- Portrait orientation recommended
+**For detailed customization, see [PRINT_CUSTOMIZATION.md](PRINT_CUSTOMIZATION.md)**
 
 ### Rolling Vouchers and Kiosk Page
 
@@ -410,13 +353,8 @@ Make sure to configure the required variables. The optional variables generally 
   - **Description**: Site ID of your UniFi controller. Using the value `default`, the backend will try to fetch the ID of the default site.
   - **Example**: `default` (default)
 
-> [!CAUTION]
-> To restrict UVM access to the guest subnetwork users while still allowing access to `/welcome` page, set the `GUEST_SUBNETWORK` variable. This makes sure guests do not have access to other UVM pages, such as the voucher management interface (the root `/` page).
->
-> Without this configuration, guests **will be able** to access the voucher management interface of UVM. This means they will be able to both create and delete vouchers by themselves.
-
 - **`GUEST_SUBNETWORK`: `IPv4 CIDR`** (_Optional_)
-  - **Description**: Restrict guest subnetwork access to UVM while still permitting access to the `/welcome` page, which users are redirected to from the UniFi captive portal. For more details, see [Rolling Vouchers and Kiosk Page](#rolling-vouchers-and-kiosk-page).
+  - **Description**: Restrict guest network users to only the `/welcome` page. Without this, guests can access the voucher management interface. See [Rolling Vouchers](#rolling-vouchers-and-kiosk-page) for details.
   - **Example**: `10.0.5.0/24`
 - **`FRONTEND_BIND_HOST`: `IPv4`** (_Optional_)
   - **Description**: Address on which the frontend server binds.
@@ -459,20 +397,10 @@ Make sure to configure the required variables. The optional variables generally 
 
 ### Common Issues
 
-- **Vouchers not appearing or connection issue to UniFi controller**
-  - Verify `UNIFI_CONTROLLER_URL` is correct and accessible
-  - Verify `UNIFI_SITE_ID` matches your controller's site
-  - Verify `UNIFI_HAS_VALID_CERT` is correct (depending on whether your `UNIFI_CONTROLLER_URL` has a valid SSL certificate or not)
-  - Check if the UniFi controller is running and reachable (DNS issues?)
-  - Ensure API key is valid
-  - Ensure the site has the hotspot/guest portal enabled
-- **Application won't start**
-  - Check all environment variables are set
-  - Verify Docker container has network access to UniFi controller
-  - Check logs: `docker logs unifi-voucher-manager`
-- **The WiFi QR code button is disabled**
-  - Check the [Environment Variables](#environment-variables) section and make sure you configured the variables required for the WiFi QR code
-  - Check the browser console for variable configuration errors (generally by hitting `F12` and going to the 'console' tab)
+- **Connection to UniFi controller fails**: Verify `UNIFI_CONTROLLER_URL`, `UNIFI_SITE_ID`, and `UNIFI_HAS_VALID_CERT` settings. Check controller is reachable.
+- **Application won't start**: Check all required environment variables are set. Review logs: `docker logs unifi-voucher-manager`
+- **WiFi QR code disabled**: Configure `WIFI_SSID` and `WIFI_PASSWORD` environment variables.
+- **Print issues**: See [PRINT_CUSTOMIZATION.md](PRINT_CUSTOMIZATION.md) for detailed troubleshooting.
 
 ### Getting Help
 
