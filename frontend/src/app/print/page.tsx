@@ -188,7 +188,7 @@ function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printCon
             {printConfig?.footer.showPrintedTime && (
               <div>
                 <strong className="text-sm">Printed:</strong>{" "}
-                {new Date().toUTCString()}
+                {new Date().toLocaleString()}
               </div>
             )}
           </div>
