@@ -5,7 +5,8 @@ use axum::{
 };
 use tower_http::cors::{Any, CorsLayer};
 use tracing::{error, info, level_filters::LevelFilter, warn};
-use tracing_subscriber::EnvFilter;
+use tracing_subscriber::{EnvFilter, fmt, prelude::*};
+use std::path::Path;
 
 use backend::{
     environment::{ENVIRONMENT, Environment},
@@ -20,13 +21,36 @@ async fn main() {
     // =================================
     // Initialize tracing
     // =================================
-    tracing_subscriber::fmt()
-        .with_env_filter(
+    
+    // Create logs directory if it doesn't exist
+    let log_dir = Path::new("/app/logs");
+    if !log_dir.exists() {
+        std::fs::create_dir_all(log_dir).expect("Failed to create logs directory");
+    }
+    
+    // Set up file appender for voucher logs
+    let file_appender = tracing_appender::rolling::daily("/app/logs", "vouchers.log");
+    let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+    
+    // Set up console output
+    let console_layer = fmt::layer()
+        .with_writer(std::io::stdout);
+    
+    // Set up file output (only INFO and above to file)
+    let file_layer = fmt::layer()
+        .with_writer(non_blocking)
+        .with_ansi(false);
+    
+    // Combine layers
+    tracing_subscriber::registry()
+        .with(
             EnvFilter::builder()
                 .with_env_var("BACKEND_LOG_LEVEL")
                 .with_default_directive(LevelFilter::INFO.into())
                 .from_env_lossy(),
         )
+        .with(console_layer)
+        .with(file_layer)
         .init();
 
     // =================================

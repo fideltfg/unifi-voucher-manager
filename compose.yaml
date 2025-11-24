@@ -19,6 +19,7 @@ services:
     volumes:
       - ./voucher-tiers.json:/app/frontend/public/voucher-tiers.json:ro
       - ./print-config.json:/app/frontend/public/print-config.json:ro
+      - ./logs:/app/logs
 
     # SEE README FOR ENVIRONMENT VARIABLES DOCUMENTATION
     env_file:

@@ -17,6 +17,7 @@ tower = "0.5.2" # Remove??
 tower-http = { version = "0.6.6", features = ["cors"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+tracing-appender = "0.2.3"
 
 [profile.release]
 opt-level = "z"
