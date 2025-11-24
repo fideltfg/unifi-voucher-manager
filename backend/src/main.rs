@@ -25,37 +25,47 @@ async fn main() {
     // Create logs directory if it doesn't exist
     let log_dir = Path::new("/app/logs");
     if !log_dir.exists() {
-        std::fs::create_dir_all(log_dir).expect("Failed to create logs directory");
+        if let Err(e) = std::fs::create_dir_all(log_dir) {
+            eprintln!("Failed to create logs directory: {}", e);
+            eprintln!("Logging to console only");
+        }
     }
     
-    // Set up file appender for voucher logs
-    let file_appender = tracing_appender::rolling::daily("/app/logs", "vouchers.log");
-    let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
-    
-    // Leak the guard to keep it alive for the entire program duration
-    // This ensures log files are properly flushed
-    std::mem::forget(guard);
+    // Set up file appender for voucher logs (if directory exists)
+    let file_layer_option = if log_dir.exists() {
+        let file_appender = tracing_appender::rolling::daily("/app/logs", "vouchers.log");
+        let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
+        
+        // Leak the guard to keep it alive for the entire program duration
+        // This ensures log files are properly flushed
+        std::mem::forget(guard);
+        
+        Some(fmt::layer()
+            .with_writer(non_blocking)
+            .with_ansi(false))
+    } else {
+        None
+    };
     
     // Set up console output
     let console_layer = fmt::layer()
         .with_writer(std::io::stdout);
     
-    // Set up file output (only INFO and above to file)
-    let file_layer = fmt::layer()
-        .with_writer(non_blocking)
-        .with_ansi(false);
-    
     // Combine layers
-    tracing_subscriber::registry()
+    let registry = tracing_subscriber::registry()
         .with(
             EnvFilter::builder()
                 .with_env_var("BACKEND_LOG_LEVEL")
                 .with_default_directive(LevelFilter::INFO.into())
                 .from_env_lossy(),
         )
-        .with(console_layer)
-        .with(file_layer)
-        .init();
+        .with(console_layer);
+    
+    if let Some(file_layer) = file_layer_option {
+        registry.with(file_layer).init();
+    } else {
+        registry.init();
+    }
 
     // =================================
     // Setup environment variables manager
