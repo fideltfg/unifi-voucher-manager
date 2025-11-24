@@ -58,7 +58,7 @@ function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printCon
       value: formatDuration(voucher.timeLimitMinutes),
     },
     {
-      label: "Max Guests",
+      label: "Devices",
       value: formatMaxGuests(voucher.authorizedGuestLimit),
     },
     {
@@ -82,13 +82,13 @@ function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printCon
       case 'logo':
         return printConfig?.logo.enabled && printConfig.logo.path ? (
           <div key="logo" className="print-logo">
-            <img 
-              src={printConfig.logo.path} 
-              alt="Logo" 
+            <img
+              src={printConfig.logo.path}
+              alt="Logo"
               width={printConfig.logo.width}
               height={printConfig.logo.height}
-              style={{ 
-                width: `${printConfig.logo.width}px`, 
+              style={{
+                width: `${printConfig.logo.width}px`,
                 height: `${printConfig.logo.height}px`,
                 objectFit: 'contain',
                 display: 'block',
@@ -113,8 +113,26 @@ function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printCon
         );
 
       case 'code':
+        const code = voucher.code.replace(/-/g, '');
+        const firstPart = code.substring(0, 5);
+        const secondPart = code.substring(5, 10);
         return (
-          <div key="code" className="print-voucher-code">{formatCode(voucher.code)}</div>
+          <div key="code" className="print-voucher-code-wrapper">
+            <div className="print-voucher-code-label">Enter Access Code</div>
+            <div className="print-voucher-code-container">
+              <div className="print-voucher-code-group">
+                {firstPart.split('').map((char, idx) => (
+                  <div key={`first-${idx}`} className="print-voucher-code-box">{char}</div>
+                ))}
+              </div>
+              <div className="print-voucher-code-separator">-</div>
+              <div className="print-voucher-code-group">
+                {secondPart.split('').map((char, idx) => (
+                  <div key={`second-${idx}`} className="print-voucher-code-box">{char}</div>
+                ))}
+              </div>
+            </div>
+          </div>
         );
 
       case 'details':
@@ -132,18 +150,7 @@ function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printCon
       case 'qr':
         return wifiConfig ? (
           <div key="qr" className="print-qr-section">
-            {wifiString && (
-              <>
-                <div className="font-bold mb-2">Scan to Connect</div>
-                <QRCodeSVG
-                  value={wifiString}
-                  size={printConfig?.qrCode?.size || 180}
-                  level="H"
-                  marginSize={4}
-                  title="Wi-Fi Access QR Code"
-                />
-              </>
-            )}
+
             <div className="print-qr-text">
               <strong>Network:</strong> {wifiConfig.ssid}
               <br />
@@ -154,8 +161,22 @@ function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printCon
                   <strong>Password:</strong> {wifiConfig.password}
                 </>
               )}
-              {wifiConfig.hidden && <div>(Hidden Network)</div>}
+              <br />
             </div>
+
+            {wifiString && (
+              <>
+                <div className="font-bold mb-2">Scan to Connect</div>
+                <QRCodeSVG
+                  value={wifiString}
+                  size={printConfig?.qrCode?.size || 180}
+                  level="H"
+                  marginSize={0}
+                  title="Wi-Fi Access QR Code"
+                />
+              </>
+            )}
+  <br />  <br />
           </div>
         ) : null;
 

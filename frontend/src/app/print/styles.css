@@ -47,12 +47,32 @@
   @apply text-sm mt-0.5;
 }
 
-.print-voucher-code {
-  @apply text-xl font-bold text-center border-2 border-black p-1 my-3;
+.print-voucher-code-wrapper {
+  @apply my-3;
+}
+
+.print-voucher-code-label {
+  @apply text-center text-sm font-semibold text-blue-600 mb-2;
+}
+
+.print-voucher-code-container {
+  @apply flex items-center justify-center gap-2;
+}
+
+.print-voucher-code-group {
+  @apply flex gap-1;
+}
+
+.print-voucher-code-box {
+  @apply w-8 h-10 flex items-center justify-center border-2 border-gray-400 rounded text-lg font-bold bg-white;
+}
+
+.print-voucher-code-separator {
+  @apply text-lg font-bold text-gray-600;
 }
 
 .print-info-row {
-  @apply flex justify-between my-1.5 border-b border-dotted border-black;
+  @apply flex justify-between my-1.5;
 }
 .print-label {
   @apply font-bold flex-1;
@@ -62,7 +82,7 @@
 }
 
 .print-qr-section {
-  @apply flex flex-col items-center justify-center my-3 border-t-2 border-black pt-2;
+  @apply flex flex-col items-center justify-center my-3 border-t-2 border-b-2 border-black pt-2;
 }
 .print-qr-section .print-qr-text {
   @apply text-center text-xs mt-2;

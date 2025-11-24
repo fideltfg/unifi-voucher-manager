@@ -3,9 +3,9 @@
     "order": [
       "logo",
       "header",
+      "code",
       "qr",
       "details",
-      "code",
       "additionalInfo",
       "footer"
     ]

@@ -1,16 +1,16 @@
 # Print Voucher Customization Guide
 
-This comprehensive guide explains how to customize printed vouchers for your thermal printer (optimized for 80mm printers like the Epson TM-T88V). You can customize both the content and layout order without editing any code.
+This guide explains how to customize printed vouchers for your thermal printer (optimized for 80mm printers like the Epson TM-T88V). You can customize both the content and layout order without editing any code.
 
 ## Configuration File
 
-All print customization is done through the `print-config.json` file in the root directory. This file is volume-mounted into the Docker container, so changes take effect immediately - just refresh your browser.
+All print customization is done through the `print-config.json` file in the root directory. Changes take effect immediately - just refresh your browser.
 
 ## Layout Configuration
 
 ### Customizing Section Order
 
-The `layout.order` array determines the order of sections on the printed voucher. You can reorder any of the 7 available sections to match your needs:
+The `layout.order` array determines the order of the sections printed on the voucher. You can reorder any of the 7 available sections to match your needs:
 
 ```json
 {
