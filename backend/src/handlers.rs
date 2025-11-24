@@ -76,7 +76,7 @@ pub async fn create_voucher_handler(
         .unwrap_or("unknown");
     
     info!("Creating voucher - hostname: {}, client_ip: {}, count: {}, duration: {}min", 
-        hostname, client_ip, request.count, request.minutes);
+        hostname, client_ip, request.count, request.time_limit_minutes);
     
     let client = UNIFI_API.get().expect("UnifiAPI not initialized");
     match client.create_voucher(request.clone()).await {
