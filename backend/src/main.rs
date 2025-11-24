@@ -30,7 +30,11 @@ async fn main() {
     
     // Set up file appender for voucher logs
     let file_appender = tracing_appender::rolling::daily("/app/logs", "vouchers.log");
-    let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+    let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
+    
+    // Leak the guard to keep it alive for the entire program duration
+    // This ensures log files are properly flushed
+    std::mem::forget(guard);
     
     // Set up console output
     let console_layer = fmt::layer()
