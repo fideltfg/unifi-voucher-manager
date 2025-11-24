@@ -69,11 +69,11 @@ function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printCon
     },
     {
       label: "Down Speed",
-      value: formatSpeed(voucher.rxRateLimitKbps),
+      value: formatSpeed(voucher.txRateLimitKbps),
     },
     {
       label: "Up Speed",
-      value: formatSpeed(voucher.txRateLimitKbps),
+      value: formatSpeed(voucher.rxRateLimitKbps),
     },
   ];
 
@@ -113,26 +113,8 @@ function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printCon
         );
 
       case 'code':
-        const code = voucher.code.replace(/-/g, '');
-        const firstPart = code.substring(0, 5);
-        const secondPart = code.substring(5, 10);
         return (
-          <div key="code" className="print-voucher-code-wrapper">
-            <div className="print-voucher-code-label">Enter Access Code</div>
-            <div className="print-voucher-code-container">
-              <div className="print-voucher-code-group">
-                {firstPart.split('').map((char, idx) => (
-                  <div key={`first-${idx}`} className="print-voucher-code-box">{char}</div>
-                ))}
-              </div>
-              <div className="print-voucher-code-separator">-</div>
-              <div className="print-voucher-code-group">
-                {secondPart.split('').map((char, idx) => (
-                  <div key={`second-${idx}`} className="print-voucher-code-box">{char}</div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <div key="code" className="print-voucher-code">{formatCode(voucher.code)}</div>
         );
 
       case 'details':
@@ -176,7 +158,7 @@ function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printCon
                 />
               </>
             )}
-  <br />  <br />
+            <br />
           </div>
         ) : null;
 
