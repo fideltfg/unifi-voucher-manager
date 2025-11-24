@@ -59,20 +59,38 @@ pub async fn get_voucher_details_handler(
 }
 
 pub async fn create_voucher_handler(
+    headers: HeaderMap,
     Json(request): Json<CreateVoucherRequest>,
 ) -> Result<Json<CreateVoucherResponse>, StatusCode> {
     debug!("Received request to create voucher");
+    
+    // Extract hostname and IP for logging
+    let hostname = headers
+        .get("host")
+        .and_then(|h| h.to_str().ok())
+        .unwrap_or("unknown");
+    let client_ip = headers
+        .get("x-forwarded-for")
+        .and_then(|h| h.to_str().ok())
+        .or_else(|| headers.get("x-real-ip").and_then(|h| h.to_str().ok()))
+        .unwrap_or("unknown");
+    
+    info!("Creating voucher - hostname: {}, client_ip: {}, count: {}, duration: {}min", 
+        hostname, client_ip, request.count, request.minutes);
+    
     let client = UNIFI_API.get().expect("UnifiAPI not initialized");
     match client.create_voucher(request.clone()).await {
         Ok(response) => {
-            info!("Voucher creation successful, returning {} vouchers", response.vouchers.len());
+            info!("Voucher creation successful - hostname: {}, vouchers_created: {}", 
+                hostname, response.vouchers.len());
             if let Some(first_voucher) = response.vouchers.first() {
-                info!("First voucher ID: {}, code: {}", first_voucher.id, first_voucher.code);
+                info!("Voucher created - hostname: {}, id: {}, code: {}", 
+                    hostname, first_voucher.id, first_voucher.code);
             }
             Ok(Json(response))
         }
         Err(e) => {
-            error!("Failed to create voucher: {}", e);
+            error!("Failed to create voucher - hostname: {}, error: {}", hostname, e);
             Err(e)
         }
     }
@@ -81,32 +99,45 @@ pub async fn create_voucher_handler(
 pub async fn create_rolling_voucher_handler(
     headers: HeaderMap,
 ) -> Result<Json<Voucher>, StatusCode> {
-    debug!("Received request to create voucher");
+    debug!("Received request to create rolling voucher");
 
     let client = UNIFI_API.get().expect("UnifiAPI not initialized");
+    
+    // Extract hostname for logging
+    let hostname = headers
+        .get("host")
+        .and_then(|h| h.to_str().ok())
+        .unwrap_or("unknown");
 
     if let Some(forwarded) = headers.get("x-forwarded-for") {
         if let Ok(ip) = forwarded.to_str() {
             debug!("Client IP from x-forwarded-for: {}", ip);
+            
+            info!("Creating rolling voucher - hostname: {}, client_ip: {}", hostname, ip);
 
             // Check if user already rotated the rolling voucher
             if client.check_rolling_voucher_ip(ip).await? {
-                info!("Rolling voucher already rotated for IP: {}", ip);
+                info!("Rolling voucher already rotated - hostname: {}, ip: {}", hostname, ip);
                 return Err(StatusCode::FORBIDDEN);
             }
 
             // Voucher rotation allowed, create a new rolling voucher
             match client.create_rolling_voucher(ip).await {
-                Ok(response) => return Ok(Json(response)),
+                Ok(response) => {
+                    info!("Rolling voucher created - hostname: {}, ip: {}, voucher_id: {}, code: {}", 
+                        hostname, ip, response.id, response.code);
+                    return Ok(Json(response));
+                }
                 Err(e) => {
-                    error!("Failed to create rolling voucher: {}", e);
+                    error!("Failed to create rolling voucher - hostname: {}, ip: {}, error: {}", 
+                        hostname, ip, e);
                     return Err(e);
                 }
             }
         }
     }
 
-    error!("Invalid x-forwarded-for header");
+    error!("Invalid x-forwarded-for header - hostname: {}", hostname);
     Err(StatusCode::BAD_REQUEST)
 }
 
