@@ -17,8 +17,8 @@ services:
       - "3012:3000"
     
     volumes:
-      - ./voucher-tiers.json:/app/frontend/public/voucher-tiers.json:ro
-      - ./print-config.json:/app/frontend/public/print-config.json:ro
+      - ./config/voucher-tiers.json:/app/frontend/public/voucher-tiers.json:ro
+      - ./config/print-config.json:/app/frontend/public/print-config.json:ro
       - ./logs:/app/logs
 
     # SEE README FOR ENVIRONMENT VARIABLES DOCUMENTATION

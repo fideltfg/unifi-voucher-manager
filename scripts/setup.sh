@@ -45,6 +45,16 @@ else
     echo "✓ frontend/public directory already exists"
 fi
 
+# Create config directory
+echo ""
+echo "Creating config directory..."
+if [ ! -d "config" ]; then
+    mkdir -p config
+    echo "✓ Created config directory"
+else
+    echo "✓ config directory already exists"
+fi
+
 # Check for configuration files
 echo ""
 echo "Checking configuration files..."
@@ -65,19 +75,19 @@ else
 fi
 
 # Check for voucher-tiers.json
-if [ ! -f "voucher-tiers.json" ]; then
-    echo "⚠ Warning: voucher-tiers.json not found."
-    echo "  Download from: https://raw.githubusercontent.com/fideltfg/unifi-voucher-manager/main/voucher-tiers.json"
+if [ ! -f "config/voucher-tiers.json" ]; then
+    echo "⚠ Warning: config/voucher-tiers.json not found."
+    echo "  Download from: https://raw.githubusercontent.com/fideltfg/unifi-voucher-manager/main/config/voucher-tiers.json"
 else
-    echo "✓ voucher-tiers.json exists"
+    echo "✓ config/voucher-tiers.json exists"
 fi
 
 # Check for print-config.json
-if [ ! -f "print-config.json" ]; then
-    echo "⚠ Warning: print-config.json not found."
-    echo "  Download from: https://raw.githubusercontent.com/fideltfg/unifi-voucher-manager/main/print-config.json"
+if [ ! -f "config/print-config.json" ]; then
+    echo "⚠ Warning: config/print-config.json not found."
+    echo "  Download from: https://raw.githubusercontent.com/fideltfg/unifi-voucher-manager/main/config/print-config.json"
 else
-    echo "✓ print-config.json exists"
+    echo "✓ config/print-config.json exists"
 fi
 
 # Final instructions
