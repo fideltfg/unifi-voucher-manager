@@ -96,11 +96,34 @@ The kiosk page (`/kiosk`) provides a guest-friendly interface displaying:
   - `voucher-tiers.json` - Tier presets and rolling voucher settings
   - `print-config.json` - Print layout customization
   - Changes take effect immediately without rebuild
+- **Audit Logging** - Comprehensive logging of voucher operations
+  - Daily rolling log files stored in `./logs/` directory
+  - Logs include hostname, client IP, voucher details
+  - Useful for tracking and auditing voucher creation
 - **Secure Architecture** - Next.js (TypeScript + Tailwind CSS) frontend with an Axum-based Rust backend that handles all UniFi Controller communication, keeping credentials isolated from the user-facing UI
 
 ## 🚀 Quick Start
 
 ### Using Docker Compose (Recommended)
+
+**Option 1: Quick Setup with Script**
+
+```bash
+# Clone the repository
+git clone https://github.com/fideltfg/unifi-voucher-manager
+cd unifi-voucher-manager
+
+# Run the setup script (creates directories, sets permissions)
+./scripts/setup.sh
+
+# Edit your configuration
+nano .env
+
+# Start the application
+docker compose up -d --build
+```
+
+**Option 2: Manual Setup**
 
 1. **Create the configuration files**
    ```bash
@@ -109,6 +132,10 @@ The kiosk page (`/kiosk`) provides a guest-friendly interface displaying:
    curl -o .env.example https://raw.githubusercontent.com/fideltfg/unifi-voucher-manager/main/.env.example
    curl -o voucher-tiers.json https://raw.githubusercontent.com/fideltfg/unifi-voucher-manager/main/voucher-tiers.json
    curl -o print-config.json https://raw.githubusercontent.com/fideltfg/unifi-voucher-manager/main/print-config.json
+   
+   # Create logs directory with correct permissions
+   mkdir -p logs
+   sudo chown -R 1001:1001 logs
    
    # Copy the example and edit with your settings
    cp .env.example .env
@@ -401,6 +428,36 @@ Make sure to configure the required variables. The optional variables generally 
 - **Application won't start**: Check all required environment variables are set. Review logs: `docker logs unifi-voucher-manager`
 - **WiFi QR code disabled**: Configure `WIFI_SSID` and `WIFI_PASSWORD` environment variables.
 - **Print issues**: See [PRINT_CUSTOMIZATION.md](PRINT_CUSTOMIZATION.md) for detailed troubleshooting.
+- **Log files not created**: Ensure the `logs` directory exists and is owned by UID 1001:
+  ```bash
+  mkdir -p logs
+  sudo chown -R 1001:1001 logs
+  docker compose restart
+  ```
+
+### Viewing Logs
+
+Application logs are written to both the console and daily rolling files in the `./logs/` directory:
+
+```bash
+# View today's log file
+cat logs/vouchers.log.$(date +%Y-%m-%d)
+
+# Follow log file in real-time
+tail -f logs/vouchers.log.$(date +%Y-%m-%d)
+
+# View Docker container logs
+docker logs unifi-voucher-manager
+
+# Follow Docker logs in real-time
+docker logs -f unifi-voucher-manager
+```
+
+Log files include:
+- Voucher creation events with hostname and client IP
+- Authentication and session management
+- Error messages and warnings
+- Backend operational information
 
 ### Getting Help
 
