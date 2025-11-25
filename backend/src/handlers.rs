@@ -144,11 +144,15 @@ pub async fn create_rolling_voucher_handler(
 pub async fn delete_selected_handler(
     Query(params): Query<DeleteRequest>,
 ) -> Result<Json<DeleteResponse>, StatusCode> {
-    debug!("Received request to delete selected vouchers");
+    info!("Received request to delete selected vouchers: ids={}", params.ids);
     let client = UNIFI_API.get().expect("UnifiAPI not initialized");
-    let ids = params.ids.split(',').map(|s| s.to_string()).collect();
+    let ids: Vec<String> = params.ids.split(',').map(|s| s.to_string()).collect();
+    info!("Parsed {} voucher IDs to delete", ids.len());
     match client.delete_vouchers_by_ids(ids).await {
-        Ok(response) => Ok(Json(response)),
+        Ok(response) => {
+            info!("Successfully deleted vouchers, response data length: {}", response.data.len());
+            Ok(Json(response))
+        }
         Err(e) => {
             error!("Failed to delete selected vouchers: {}", e);
             Err(e)

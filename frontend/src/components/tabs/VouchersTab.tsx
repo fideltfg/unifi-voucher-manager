@@ -100,7 +100,7 @@ export default function VouchersTab() {
             ? await api.deleteSelectedVouchers([...selectedVouchers.map((v) => v.id)])
             : await api.deleteSelectedVouchers([...expiredIds]);
 
-        const count = res.vouchersDeleted || 0;
+        const count = res.data?.length || 0;
         if (count > 0) {
           notify(
             `Successfully deleted ${count} ${kind_word} voucher${count === 1 ? "" : "s"}`,

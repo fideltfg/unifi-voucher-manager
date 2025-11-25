@@ -34,7 +34,7 @@ pub async fn run_daily_purge(timezone: Tz) {
 
         info!("Purging expired rolling vouchers...");
         match delete_expired_rolling_handler().await {
-            Ok(response) => info!("Deleted {} rolling vouchers", response.vouchers_deleted),
+            Ok(response) => info!("Deleted {} rolling vouchers (status: {})", response.data.len(), response.meta.rc),
             Err(code) => error!("Failed to delete rolling vouchers: {}", code),
         };
     }

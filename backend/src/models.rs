@@ -295,8 +295,13 @@ pub struct GetVouchersResponse {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DeleteResponse {
-    #[serde(rename = "vouchersDeleted")]
-    pub vouchers_deleted: u32,
+    pub data: Vec<serde_json::Value>,
+    pub meta: DeleteMeta,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DeleteMeta {
+    pub rc: String,
 }
 
 #[derive(Debug, Serialize)]

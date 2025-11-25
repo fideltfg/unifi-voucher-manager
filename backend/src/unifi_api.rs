@@ -346,8 +346,9 @@ impl<'a> UnifiAPI<'a> {
             })?;
 
         // Parse the JSON into the expected structure
-        serde_json::from_value::<U>(response_json).map_err(|e| {
+        serde_json::from_value::<U>(response_json.clone()).map_err(|e| {
             error!("Failed to parse response JSON structure: {:?}", e);
+            error!("Response JSON: {:?}", response_json);
             debug!("Response body: {}", response_text);
             StatusCode::INTERNAL_SERVER_ERROR
         })
@@ -561,17 +562,57 @@ impl<'a> UnifiAPI<'a> {
     ) -> Result<DeleteResponse, StatusCode> {
         if ids.is_empty() || (ids.len() == 1 && ids[0].is_empty()) {
             return Ok(DeleteResponse {
-                vouchers_deleted: 0,
+                data: vec![],
+                meta: crate::models::DeleteMeta {
+                    rc: "ok".to_string(),
+                },
             });
         }
 
-        let body = serde_json::json!({
-            "cmd": "delete-voucher",
-            "_id": ids,
-        });
-
-        self.make_request(RequestType::Post, &self.voucher_api_url, Some(&body))
-            .await
+        info!("Sending delete request to UniFi for voucher IDs: {:?}", ids);
+        
+        // Try deleting vouchers one at a time
+        let mut deleted_count = 0;
+        let mut all_successful = true;
+        
+        for id in &ids {
+            let body = serde_json::json!({
+                "cmd": "delete-voucher",
+                "_id": id,
+            });
+            info!("Delete request body for ID {}: {}", id, body);
+            
+            let result: Result<DeleteResponse, StatusCode> = self.make_request(RequestType::Post, &self.voucher_api_url, Some(&body))
+                .await;
+            
+            match &result {
+                Ok(response) => {
+                    info!("UniFi delete response for {}: data.len={}, meta.rc={}", id, response.data.len(), response.meta.rc);
+                    if response.meta.rc == "ok" {
+                        deleted_count += 1;
+                    } else {
+                        all_successful = false;
+                    }
+                }
+                Err(e) => {
+                    error!("UniFi delete error for {}: {}", id, e);
+                    all_successful = false;
+                }
+            }
+        }
+        
+        info!("Delete operation completed: {}/{} vouchers deleted", deleted_count, ids.len());
+        
+        // Create a response with the count of successfully deleted vouchers
+        // UniFi API returns empty data array, so we populate it with dummy entries to indicate count
+        let data_array: Vec<serde_json::Value> = (0..deleted_count).map(|_| serde_json::json!({})).collect();
+        
+        Ok(DeleteResponse {
+            data: data_array,
+            meta: crate::models::DeleteMeta {
+                rc: "ok".to_string(),
+            },
+        })
     }
 
     pub async fn delete_expired_vouchers(&self) -> Result<DeleteResponse, StatusCode> {

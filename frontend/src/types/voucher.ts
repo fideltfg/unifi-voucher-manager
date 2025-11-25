@@ -29,7 +29,10 @@ export interface VoucherCreateData
 }
 
 export interface VoucherDeletedResponse {
-  vouchersDeleted: number;
+  data: any[];
+  meta: {
+    rc: string;
+  };
 }
 
 export interface VoucherCreatedResponse {

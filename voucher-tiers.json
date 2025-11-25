@@ -2,7 +2,7 @@
   "rollingVoucher": {
     "enabled": false,
     "durationHours": 1,
-    "downloadMbps": 5.1,
+    "downloadMbps": 5,
     "uploadMbps": 2,
     "dataLimitMB": 1024
   },

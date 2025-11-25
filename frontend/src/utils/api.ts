@@ -15,7 +15,9 @@ function removeNullUndefined<T extends Record<string, any>>(obj: T): T {
 }
 
 async function call<T>(endpoint: string, opts: RequestInit = {}) {
-  const res = await fetch(`/rust-api/${endpoint}`, {
+  // Remove leading slash from endpoint if present to avoid double slashes
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+  const res = await fetch(`/rust-api/${cleanEndpoint}`, {
     headers: { "Content-Type": "application/json" },
     ...opts,
   });
