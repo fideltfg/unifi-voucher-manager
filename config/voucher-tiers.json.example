@@ -40,7 +40,7 @@
     {
       "id": "guest",
       "name": "1 Hour Free Guest",
-      "description": "Free limited access (2/1 Mbps, 500MB (1h)",
+      "description": "Free limited access (2/1 Mbps, 500MB (1h))",
       "durationHours": 1,
       "downloadMbps": 2,
       "uploadMbps": 1,

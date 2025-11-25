@@ -54,6 +54,10 @@ function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printCon
 
   const fields = [
     {
+      label: "Name",
+      value: voucher.name || "N/A",
+    },
+    {
       label: "Duration",
       value: formatDuration(voucher.timeLimitMinutes),
     },
@@ -69,11 +73,11 @@ function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printCon
     },
     {
       label: "Down Speed",
-      value: formatSpeed(voucher.txRateLimitKbps),
+      value: formatSpeed(voucher.rxRateLimitKbps),
     },
     {
       label: "Up Speed",
-      value: formatSpeed(voucher.rxRateLimitKbps),
+      value: formatSpeed(voucher.txRateLimitKbps),
     },
   ];
 
@@ -120,7 +124,12 @@ function VoucherPrintCard({ voucher, printConfig }: { voucher: Voucher, printCon
       case 'details':
         return (
           <div key="details">
-            {fields.map((field, index) => (
+            {voucher.name && (
+              <div style={{ textAlign: 'center', fontSize: '1.1em', fontWeight: 'bold', marginBottom: '8px' }}>
+                {voucher.name}
+              </div>
+            )}
+            {fields.slice(1).map((field, index) => (
               <div key={index} className="print-info-row">
                 <span className="print-label">{field.label}:</span>
                 <span className="print-value">{field.value}</span>
