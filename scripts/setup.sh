@@ -49,6 +49,7 @@ fi
 echo ""
 echo "Checking configuration files..."
 
+# Check for .env file
 if [ ! -f ".env" ]; then
     if [ -f ".env.example" ]; then
         echo "⚠ .env file not found. Copying from .env.example..."
@@ -56,20 +57,25 @@ if [ ! -f ".env" ]; then
         echo "✓ Created .env file - PLEASE EDIT IT WITH YOUR SETTINGS"
         NEED_ENV_CONFIG=true
     else
-        echo "⚠ Warning: .env.example not found. You'll need to create .env manually."
+        echo "⚠ Warning: Neither .env nor .env.example found."
+        echo "  You'll need to create .env manually or download .env.example"
     fi
 else
     echo "✓ .env file exists"
 fi
 
+# Check for voucher-tiers.json
 if [ ! -f "voucher-tiers.json" ]; then
-    echo "⚠ Warning: voucher-tiers.json not found. Using defaults."
+    echo "⚠ Warning: voucher-tiers.json not found."
+    echo "  Download from: https://raw.githubusercontent.com/fideltfg/unifi-voucher-manager/main/voucher-tiers.json"
 else
     echo "✓ voucher-tiers.json exists"
 fi
 
+# Check for print-config.json
 if [ ! -f "print-config.json" ]; then
-    echo "⚠ Warning: print-config.json not found. Using defaults."
+    echo "⚠ Warning: print-config.json not found."
+    echo "  Download from: https://raw.githubusercontent.com/fideltfg/unifi-voucher-manager/main/print-config.json"
 else
     echo "✓ print-config.json exists"
 fi
