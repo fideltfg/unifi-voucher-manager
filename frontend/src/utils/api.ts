@@ -32,7 +32,12 @@ async function call<T>(endpoint: string, opts: RequestInit = {}) {
 export const api = {
   getAllVouchers: () => call<{ data: Voucher[] }>("/vouchers"),
 
-  getRollingVoucher: () => call<Voucher>("/vouchers/rolling"),
+  getRollingVoucher: (index?: number) => {
+    const url = index !== undefined ? `/vouchers/rolling?index=${index}` : "/vouchers/rolling";
+    return call<Voucher>(url);
+  },
+
+  getAllRollingVouchers: () => call<Voucher[]>("/vouchers/rolling/all"),
 
   getNewestVoucher: () => call<Voucher>("/vouchers/newest"),
 
@@ -54,6 +59,16 @@ export const api = {
       method: "POST",
     });
     await notifyVouchersUpdated();
+    return result;
+  },
+
+  rotateRollingVoucherIfNeeded: async () => {
+    const result = await call<{status: string, voucher?: Voucher}>("/vouchers/rolling/rotate", {
+      method: "POST",
+    });
+    if (result.status === "created") {
+      await notifyVouchersUpdated();
+    }
     return result;
   },
 

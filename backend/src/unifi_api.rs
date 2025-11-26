@@ -379,11 +379,15 @@ impl<'a> UnifiAPI<'a> {
     pub async fn get_rolling_voucher(&self) -> Result<Option<Voucher>, StatusCode> {
         let response = self.get_all_vouchers().await?;
 
-        // Find the most recent rolling voucher
+        // Find the most recent unused rolling voucher
         let rolling = response
             .data
             .iter()
-            .filter(|voucher| voucher.name.starts_with(ROLLING_VOUCHER_NAME_PREFIX))
+            .filter(|voucher| {
+                voucher.name.starts_with(ROLLING_VOUCHER_NAME_PREFIX) 
+                    && voucher.authorized_guest_count == 0  // Only unused vouchers
+                    && !voucher.expired  // Only non-expired vouchers
+            })
             .max_by_key(|voucher| {
                 DateTime::parse_from_str(&voucher.created_at, DATE_TIME_FORMAT)
                     .unwrap_or_else(|_| DateTime::UNIX_EPOCH.fixed_offset())
@@ -391,6 +395,36 @@ impl<'a> UnifiAPI<'a> {
             .cloned();
 
         Ok(rolling)
+    }
+
+    pub async fn get_all_unused_rolling_vouchers(&self) -> Result<Vec<Voucher>, StatusCode> {
+        let response = self.get_all_vouchers().await?;
+
+        // Get all unused rolling vouchers, sorted by creation time (oldest first)
+        let mut vouchers: Vec<Voucher> = response
+            .data
+            .into_iter()
+            .filter(|voucher| {
+                voucher.name.starts_with(ROLLING_VOUCHER_NAME_PREFIX)
+                    && voucher.authorized_guest_count == 0
+                    && !voucher.expired
+            })
+            .collect();
+
+        vouchers.sort_by(|a, b| {
+            let time_a = DateTime::parse_from_str(&a.created_at, DATE_TIME_FORMAT)
+                .unwrap_or_else(|_| DateTime::UNIX_EPOCH.fixed_offset());
+            let time_b = DateTime::parse_from_str(&b.created_at, DATE_TIME_FORMAT)
+                .unwrap_or_else(|_| DateTime::UNIX_EPOCH.fixed_offset());
+            time_a.cmp(&time_b)
+        });
+
+        Ok(vouchers)
+    }
+
+    pub async fn get_rolling_voucher_by_index(&self, index: usize) -> Result<Option<Voucher>, StatusCode> {
+        let vouchers = self.get_all_unused_rolling_vouchers().await?;
+        Ok(vouchers.get(index).cloned())
     }
 
     pub async fn get_newest_voucher(&self) -> Result<Voucher, StatusCode> {
@@ -554,6 +588,64 @@ impl<'a> UnifiAPI<'a> {
             Some(v) => Ok(v),
             None => Err(StatusCode::INTERNAL_SERVER_ERROR),
         }
+    }
+
+    pub async fn create_new_rolling_voucher_if_needed(&self) -> Result<Option<Voucher>, StatusCode> {
+        let voucher_config = crate::voucher_config::VOUCHER_CONFIG
+            .get()
+            .expect("Voucher config not initialized");
+
+        let min_vouchers = voucher_config.rolling_voucher.min_rolling_vouchers as usize;
+        let unused_vouchers = self.get_all_unused_rolling_vouchers().await?;
+        let current_count = unused_vouchers.len();
+
+        if current_count >= min_vouchers {
+            // We already have enough unused rolling vouchers
+            debug!("Already have {} unused rolling vouchers (min: {}), no action needed", current_count, min_vouchers);
+            return Ok(None);
+        }
+
+        // Need to create more rolling vouchers
+        let vouchers_to_create = min_vouchers - current_count;
+        info!("Creating {} rolling voucher(s) to maintain minimum of {} (current: {})", vouchers_to_create, min_vouchers, current_count);
+
+        // Create vouchers one at a time to ensure unique names
+        let mut created_vouchers = Vec::new();
+        for i in 0..vouchers_to_create {
+            let request = CreateVoucherRequest {
+                count: 1,
+                name: format!(
+                    "{} {}-auto-{}",
+                    ROLLING_VOUCHER_NAME_PREFIX,
+                    chrono::Local::now().format("%Y%m%d%H%M%S"),
+                    i
+                ),
+                time_limit_minutes: voucher_config.duration_minutes(),
+                authorized_guest_limit: None,
+                data_usage_limit_mbytes: voucher_config.data_limit_mb(),
+                tx_rate_limit_kbps: voucher_config.download_kbps(),
+                rx_rate_limit_kbps: voucher_config.upload_kbps(),
+            };
+
+            match self.create_voucher(request).await {
+                Ok(result) => {
+                    if let Some(voucher) = result.vouchers.first() {
+                        info!("Created rolling voucher {}/{}: id={}, code={}", i+1, vouchers_to_create, voucher.id, voucher.code);
+                        created_vouchers.push(voucher.clone());
+                    }
+                }
+                Err(e) => {
+                    error!("Failed to create rolling voucher {}/{}: {}", i+1, vouchers_to_create, e);
+                }
+            }
+            
+            // Small delay between creations to ensure unique timestamps
+            if i < vouchers_to_create - 1 {
+                tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+            }
+        }
+        
+        Ok(created_vouchers.first().cloned())
     }
 
     pub async fn delete_vouchers_by_ids(

@@ -19,14 +19,29 @@ pub async fn get_vouchers_handler() -> Result<Json<GetVouchersResponse>, StatusC
     }
 }
 
-pub async fn get_rolling_voucher_handler() -> Result<Json<Voucher>, StatusCode> {
+pub async fn get_rolling_voucher_handler(
+    Query(params): Query<std::collections::HashMap<String, String>>,
+) -> Result<Json<Voucher>, StatusCode> {
     debug!("Received request to get rolling voucher");
     let client = UNIFI_API.get().expect("UnifiAPI not initialized");
-    match client.get_rolling_voucher().await {
-        Ok(Some(voucher)) => Ok(Json(voucher)),
-        Ok(None) => Err(StatusCode::NOT_FOUND),
+    
+    // Check if an index was provided for multi-kiosk support
+    let index = params.get("index")
+        .and_then(|s| s.parse::<usize>().ok())
+        .unwrap_or(0);
+    
+    debug!("Getting rolling voucher at index {}", index);
+    match client.get_rolling_voucher_by_index(index).await {
+        Ok(Some(voucher)) => {
+            info!("Returning rolling voucher at index {}: id={}, code={}", index, voucher.id, voucher.code);
+            Ok(Json(voucher))
+        }
+        Ok(None) => {
+            info!("No rolling voucher found at index {}", index);
+            Err(StatusCode::NOT_FOUND)
+        }
         Err(e) => {
-            error!("Failed to get rolling voucher: {}", e);
+            error!("Failed to get rolling voucher at index {}: {}", index, e);
             Err(e)
         }
     }
@@ -139,6 +154,49 @@ pub async fn create_rolling_voucher_handler(
 
     error!("Invalid x-forwarded-for header - hostname: {}", hostname);
     Err(StatusCode::BAD_REQUEST)
+}
+
+pub async fn get_all_rolling_vouchers_handler() -> Result<Json<Vec<Voucher>>, StatusCode> {
+    debug!("Received request to get all unused rolling vouchers");
+    let client = UNIFI_API.get().expect("UnifiAPI not initialized");
+    
+    match client.get_all_unused_rolling_vouchers().await {
+        Ok(vouchers) => {
+            debug!("Found {} unused rolling vouchers", vouchers.len());
+            Ok(Json(vouchers))
+        }
+        Err(e) => {
+            error!("Failed to get unused rolling vouchers: {}", e);
+            Err(e)
+        }
+    }
+}
+
+pub async fn rotate_rolling_voucher_handler() -> Result<Json<serde_json::Value>, StatusCode> {
+    debug!("Received request to check and rotate rolling voucher if needed");
+
+    let client = UNIFI_API.get().expect("UnifiAPI not initialized");
+    
+    match client.create_new_rolling_voucher_if_needed().await {
+        Ok(Some(voucher)) => {
+            info!("New rolling voucher created: id={}, code={}", voucher.id, voucher.code);
+            Ok(Json(serde_json::json!({
+                "status": "created",
+                "voucher": voucher
+            })))
+        }
+        Ok(None) => {
+            debug!("No new rolling voucher needed, minimum count already met");
+            Ok(Json(serde_json::json!({
+                "status": "no_action_needed",
+                "message": "Minimum rolling vouchers already exist"
+            })))
+        }
+        Err(e) => {
+            error!("Failed to check/create rolling voucher: {}", e);
+            Err(e)
+        }
+    }
 }
 
 pub async fn delete_selected_handler(

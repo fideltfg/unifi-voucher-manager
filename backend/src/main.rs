@@ -139,9 +139,14 @@ async fn main() {
         )
         .route("/api/vouchers/newest", get(get_newest_voucher_handler))
         .route("/api/vouchers/rolling", get(get_rolling_voucher_handler))
+        .route("/api/vouchers/rolling/all", get(get_all_rolling_vouchers_handler))
         .route(
             "/api/vouchers/rolling",
             post(create_rolling_voucher_handler),
+        )
+        .route(
+            "/api/vouchers/rolling/rotate",
+            post(rotate_rolling_voucher_handler),
         )
         .route("/api/vouchers/selected", delete(delete_selected_handler))
         .layer(cors);

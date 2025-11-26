@@ -4,7 +4,8 @@
     "durationHours": 1,
     "downloadMbps": 5,
     "uploadMbps": 2,
-    "dataLimitMB": 1024
+    "dataLimitMB": 1024,
+    "minRollingVouchers": 1
   },
   "tiers": [
     {

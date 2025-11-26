@@ -119,6 +119,16 @@ export default function VouchersTab() {
     [selectedVouchers, expiredIds, cancelEdit],
   );
 
+  // Periodic check for rolling voucher rotation
+  const checkRollingVoucherRotation = useCallback(async () => {
+    try {
+      await api.rotateRollingVoucherIfNeeded();
+    } catch (error) {
+      // Silently handle errors to avoid spamming the user
+      console.debug("Rolling voucher rotation check failed:", error);
+    }
+  }, []);
+
   useEffect(() => {
     load();
     window.addEventListener("vouchersUpdated", load);
@@ -127,12 +137,16 @@ export default function VouchersTab() {
       if (e.key === "Escape") cancelEdit();
     };
     window.addEventListener("keydown", onKey);
+    
+    // Set up periodic rolling voucher rotation check every 30 seconds
+    const rotationInterval = setInterval(checkRollingVoucherRotation, 30000);
 
     return () => {
       window.removeEventListener("vouchersUpdated", load);
       window.removeEventListener("keydown", onKey);
+      clearInterval(rotationInterval);
     };
-  }, [load, cancelEdit]);
+  }, [load, cancelEdit, checkRollingVoucherRotation]);
 
   const handlePrintClick = (mode: PrintMode) => {
     // Prepare the data for the URL

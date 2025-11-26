@@ -16,6 +16,12 @@ pub struct RollingVoucherConfig {
     pub download_mbps: Option<u64>,
     pub upload_mbps: Option<u64>,
     pub data_limit_mb: Option<u64>,
+    #[serde(default = "default_min_rolling_vouchers")]
+    pub min_rolling_vouchers: u32,
+}
+
+fn default_min_rolling_vouchers() -> u32 {
+    1
 }
 
 impl Default for RollingVoucherConfig {
@@ -26,6 +32,7 @@ impl Default for RollingVoucherConfig {
             download_mbps: None,
             upload_mbps: None,
             data_limit_mb: None,
+            min_rolling_vouchers: 1,
         }
     }
 }
