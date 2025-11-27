@@ -13,6 +13,7 @@ export default function KioskPage() {
   const [voucher, setVoucher] = useState<Voucher | null>(null);
   const [state, setState] = useState<TriState | null>(null);
   const [kioskIndex, setKioskIndex] = useState<number | null>(null);
+  const [countdown, setCountdown] = useState<number>(10);
   const { wifiConfig, wifiString } = useGlobal();
   const loadingRef = useRef(false);
 
@@ -20,7 +21,7 @@ export default function KioskPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const urlIndex = params.get("index");
-    
+
     if (urlIndex !== null) {
       const index = parseInt(urlIndex, 10);
       if (!isNaN(index) && index >= 0) {
@@ -29,7 +30,7 @@ export default function KioskPage() {
         return;
       }
     }
-    
+
     // Try to get from localStorage
     const storedIndex = localStorage.getItem("kioskIndex");
     if (storedIndex !== null) {
@@ -39,14 +40,14 @@ export default function KioskPage() {
         return;
       }
     }
-    
+
     // Default to index 0
     setKioskIndex(0);
   }, []);
 
   const load = useCallback(async () => {
     if (loadingRef.current || kioskIndex === null) return;
-    
+
     loadingRef.current = true;
     try {
       setState("loading");
@@ -76,18 +77,18 @@ export default function KioskPage() {
   // Check for voucher usage and rotate if needed
   const checkAndRotate = useCallback(async () => {
     if (!voucher || state !== "ok" || kioskIndex === null) return;
-    
+
     try {
       // Get fresh voucher data to check if it's been used
       const currentVoucher = await api.getRollingVoucher(kioskIndex);
-      
+
       // If no voucher is returned or if the current voucher ID changed, we need to reload
       if (!currentVoucher || currentVoucher.id !== voucher.id) {
         console.log(`Kiosk ${kioskIndex}: Rolling voucher changed or was used, reloading...`);
         await load();
         return;
       }
-      
+
       // If the voucher has been used (authorized_guest_count > 0), try to rotate
       if (currentVoucher.authorizedGuestCount > 0) {
         console.log(`Kiosk ${kioskIndex}: Current voucher has been used, attempting to rotate...`);
@@ -111,7 +112,7 @@ export default function KioskPage() {
   // Store functions in refs for stable event listeners
   const loadRef = useRef(load);
   const checkAndRotateRef = useRef(checkAndRotate);
-  
+
   useEffect(() => {
     loadRef.current = load;
     checkAndRotateRef.current = checkAndRotate;
@@ -119,18 +120,27 @@ export default function KioskPage() {
 
   useEffect(() => {
     if (kioskIndex === null) return;
-    
+
     const handleVouchersUpdated = () => loadRef.current();
-    
+
     loadRef.current();
     window.addEventListener("vouchersUpdated", handleVouchersUpdated);
-    
+
     // Set up periodic checking every 10 seconds
-    const interval = setInterval(() => checkAndRotateRef.current(), 10000);
-    
+    const interval = setInterval(() => {
+      checkAndRotateRef.current();
+      setCountdown(10);
+    }, 10000);
+
+    // Countdown timer that updates every second
+    const countdownInterval = setInterval(() => {
+      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
     return () => {
       window.removeEventListener("vouchersUpdated", handleVouchersUpdated);
       clearInterval(interval);
+      clearInterval(countdownInterval);
     };
   }, [kioskIndex]); // Only run when kioskIndex is set
 
@@ -148,22 +158,67 @@ export default function KioskPage() {
       case "ok":
         const qrAvailable = wifiConfig && wifiString;
         return (
-          <div
-            className={`grid grid-cols-1 ${qrAvailable && "md:grid-cols-2 "} gap-8 items-center`}
-          >
-            {qrAvailable && <WifiQr className="w-full sm:h-80 md:h-96 " />}
-            <div className={`text-center ${qrAvailable && "md:text-left"}`}>
-              <h2 className="font-medium mb-4 text-3xl sm:text-4xl md:text-5xl">
-                Voucher Code {kioskIndex !== null && kioskIndex > 0 && `#${kioskIndex + 1}`}
-              </h2>
-              <div className="voucher-code tracking-widest text-5xl sm:text-6xl md:text-7xl">
-                {voucher ? formatCode(voucher.code) : "No voucher available"}
+          <div className="space-y-8">
+            {/* Instructions */}
+            <div className="text-center mb-8">
+              <h1 className="font-bold text-4xl sm:text-5xl md:text-6xl mb-4">
+                Norquay Guest WiFi Access
+              </h1>
+              <p className="text-center text-lg sm:text-xl text-gray-600 dark:text-gray-400">Scan the QR code below with your device to connect automatically</p>
+            </div>
+
+            {/* Main content */}
+            <div className="flex flex-col items-center gap-8 max-w-2xl mx-auto">
+              {qrAvailable && (
+                <div className="space-y-4 w-full">
+                  <WifiQr className="w-full sm:h-80 md:h-96 " />
+                </div>
+              )}
+              <div className="text-center w-full">
+                <h2 className="font-medium mb-4 text-3xl sm:text-4xl md:text-5xl">
+                  Voucher Code
+                </h2>
+                <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mt-6">
+                  Enter this code when prompted after connecting to the WiFi network
+                </p>
+                <div className="voucher-code tracking-widest text-5xl sm:text-6xl md:text-7xl mb-4">
+                  {voucher ? formatCode(voucher.code) : "No voucher available"}
+                </div>
+                <div className="flex items-center justify-center gap-3 mt-6">
+                  <svg className="w-6 h-6 -rotate-90" viewBox="0 0 36 36">
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="16"
+                      fill="none"
+                      className="stroke-gray-300 dark:stroke-gray-700"
+                      strokeWidth="3"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="16"
+                      fill="none"
+                      className="stroke-blue-500 dark:stroke-blue-400"
+                      strokeWidth="3"
+                      strokeDasharray="100"
+                      strokeDashoffset={100 - (countdown / 10) * 100}
+                      strokeLinecap="round"
+                      style={{ transition: 'stroke-dashoffset 1s linear' }}
+                    />
+                  </svg>
+                </div>
+                <div className="flex items-center justify-center gap-3 mt-6">
+                  <br /><span className="text-sm text-gray-500 dark:text-gray-400">
+                    Refreshing code in {countdown}s
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         );
     }
-  }, [voucher, state, wifiConfig, wifiString]);
+  }, [voucher, state, wifiConfig, wifiString, countdown]);
 
   return (
     <main className="flex-center h-screen w-full px-4">{renderContent()}</main>
