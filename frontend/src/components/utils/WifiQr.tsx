@@ -75,9 +75,7 @@ export default function WifiQr({
                 excavate: true,
               }}
             />
-            <p className="text-sm text-muted">
-              Scan to join <strong>{wifiConfig.ssid}</strong>
-            </p>
+            <p className="text-sm text-muted"><strong>{wifiConfig.ssid}</strong></p>
           </>
         ) : (
           <p className="text-sm text-muted">No Wi‑Fi credentials configured.</p>
