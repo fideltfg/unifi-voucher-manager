@@ -377,4 +377,17 @@
   .sticky-tabs {
     top: var(--header-height);
   }
+
+  /* Additional semantic utilities for consistent styling */
+  .btn-selected {
+    @apply bg-primary-600 text-white border-primary-700 hover:bg-primary-700;
+  }
+  
+  .status-badge {
+    @apply px-2 py-1 rounded-lg text-xs font-semibold uppercase tracking-wide;
+  }
+  
+  .info-row {
+    @apply flex justify-between items-center;
+  }
 }

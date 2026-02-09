@@ -188,7 +188,7 @@ export default function VouchersTab() {
             <div className="ml-auto flex gap-2">
               <button
                 onClick={() => setViewMode("card")}
-                className={`btn-secondary ${viewMode === "card" ? "!bg-accent !text-white" : ""}`}
+                className={viewMode === "card" ? "btn-selected" : "btn-secondary"}
                 title="Card View"
               >
                 <svg
@@ -208,7 +208,7 @@ export default function VouchersTab() {
               </button>
               <button
                 onClick={() => setViewMode("list")}
-                className={`btn-secondary ${viewMode === "list" ? "!bg-accent !text-white" : ""}`}
+                className={viewMode === "list" ? "btn-selected" : "btn-secondary"}
                 title="List View"
               >
                 <svg

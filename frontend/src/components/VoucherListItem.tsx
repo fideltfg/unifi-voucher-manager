@@ -5,6 +5,7 @@ import {
   formatGuestUsage,
   formatStatus,
 } from "@/utils/format";
+import { getVoucherStatusClass } from "@/utils/voucherStatus";
 import { memo, useCallback } from "react";
 
 type Props = {
@@ -15,11 +16,7 @@ type Props = {
 };
 
 const VoucherListItem = ({ voucher, selected, editMode, onClick }: Props) => {
-  const statusClass = voucher.expired
-    ? "bg-status-danger text-status-danger"
-    : voucher.activatedAt
-      ? "bg-status-warning text-status-warning"
-      : "bg-status-success text-status-success";
+  const statusClass = getVoucherStatusClass(voucher);
   const onClickHandler = useCallback(
     () => onClick?.(voucher),
     [voucher, onClick],
@@ -69,9 +66,7 @@ const VoucherListItem = ({ voucher, selected, editMode, onClick }: Props) => {
 
         {/* Status */}
         <div className="flex-shrink-0 w-24">
-          <span
-            className={`px-2 py-1 rounded-lg text-xs font-semibold uppercase ${statusClass} inline-block`}
-          >
+          <span className={`status-badge ${statusClass} inline-block`}>
             {formatStatus(voucher.expired, voucher.activatedAt)}
           </span>
         </div>
