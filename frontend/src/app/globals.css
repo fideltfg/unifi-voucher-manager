@@ -384,7 +384,7 @@
   }
   
   .status-badge {
-    @apply px-2 py-1 rounded-lg text-xs font-semibold uppercase tracking-wide;
+    @apply px-2 py-1 rounded-lg text-xs font-semibold uppercase;
   }
   
   .info-row {
